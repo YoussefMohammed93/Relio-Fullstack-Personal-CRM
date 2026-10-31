@@ -2007,24 +2007,13 @@ These rules apply to every development phase and every AI coding agent working o
 
 # 29. Current Project Status
 
-**Current Phase: Phase 1 — Monorepo Initialization**
+**Current Phase: Phase 2 — Frontend Foundation & Design System**
 
-The initial project setup is being prepared.
+Phase 1 — Monorepo Initialization & Project Foundation is complete. Its
+implementation and validation record is maintained in `docs/PROGRESS.md`.
 
-No CRM features should be implemented until the foundation is verified.
-
-The immediate next milestone is:
-
-- Working React frontend on port 3000.
-- Working Express backend on port 5000.
-- Working pnpm monorepo.
-- Shared package configured.
-- Git initialized.
-- `.gitignore` configured.
-- TypeScript and development scripts working.
-- Basic health-check endpoint responding successfully.
-
-After that, proceed to Phase 2.
+The next milestone is Phase 2, Milestone 2.1 — Existing Frontend Audit. Do not
+begin Phase 2 implementation until the user instructs you to continue.
 
 ---
 
