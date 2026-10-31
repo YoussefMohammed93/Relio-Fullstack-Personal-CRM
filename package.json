@@ -1,20 +1,32 @@
 {
-  "name": "Relio",
+  "name": "relio",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "private": true,
+  "description": "Relio monorepo",
+  "packageManager": "pnpm@11.28.0",
+  "engines": {
+    "node": ">=22.0.0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.22.0",
-      "onFail": "download"
-    }
+  "scripts": {
+    "dev": "concurrently -k -n client,server -c cyan,magenta \"pnpm dev:client\" \"pnpm dev:server\"",
+    "dev:client": "pnpm --filter @relio/client dev",
+    "dev:server": "pnpm --filter @relio/server dev",
+    "build": "pnpm -r --if-present build",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "concurrently": "^9.2.0",
+    "eslint": "^9.30.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.37.0"
   },
   "type": "module"
 }
