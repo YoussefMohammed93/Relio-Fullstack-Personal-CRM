@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 2 — Frontend Foundation & Design System |
-| Next Milestone | 2.1 — Existing Frontend Audit |
+| Next Milestone | 2.5 — Theme Management |
 | Last Updated | 2026-10-31 |
 
 ### Status Definitions
@@ -39,7 +39,7 @@ A phase must not be marked Completed just because its main UI or initial impleme
 | Phase | Name | Status |
 |---|---|---|
 | 1 | Monorepo Initialization & Project Foundation | Completed |
-| 2 | Frontend Foundation & Design System | Not Started |
+| 2 | Frontend Foundation & Design System | In Progress |
 | 3 | Backend Infrastructure & API Foundation | Not Started |
 | 4 | Database Architecture & Data Modeling | Not Started |
 | 5 | Authentication & User Management | Not Started |
@@ -163,79 +163,187 @@ Validation results recorded for the completed foundation:
 
 # Phase 2 — Frontend Foundation & Design System
 
-**Status:** Not Started
+**Status:** In Progress
 
 ## Milestone 2.1 — Existing Frontend Audit
 
-- [ ] Inspect the complete existing frontend structure.
-- [ ] Review installed dependencies.
-- [ ] Review Tailwind CSS v4 configuration.
-- [ ] Review existing shadcn-compatible setup.
-- [ ] Review current routing configuration.
-- [ ] Review TanStack Query setup.
-- [ ] Identify existing reusable components.
-- [ ] Identify duplicated or unnecessary dependencies.
-- [ ] Review existing fonts and typography.
-- [ ] Review existing CSS variables and theme configuration.
-- [ ] Document what can be reused.
-- [ ] Avoid recreating existing working infrastructure.
+**Status:** Completed
+
+- [x] Inspect the complete existing frontend structure.
+- [x] Review installed dependencies.
+- [x] Review Tailwind CSS v4 configuration.
+- [x] Review existing shadcn-compatible setup.
+- [x] Review current routing configuration.
+- [x] Review TanStack Query setup.
+- [x] Identify existing reusable components.
+- [x] Identify duplicated or unnecessary dependencies.
+- [x] Review existing fonts and typography.
+- [x] Review existing CSS variables and theme configuration.
+- [x] Document what can be reused.
+- [x] Avoid recreating existing working infrastructure.
+
+### Milestone 2.1 Audit Record
+
+Inspected the client package manifest, source tree, app entry point, provider composition, router, QueryClient, global stylesheet, Vite configuration, and shadcn `components.json`.
+
+Reusable foundation:
+
+- React 19, Vite, TypeScript, Tailwind CSS v4 through `@tailwindcss/vite`, React Router, and the `@/*` source alias are configured.
+- `AppProviders` already provides the shared TanStack Query client. The client uses a 30-second query stale time, one retry, and disables refetch-on-window-focus.
+- `globals.css` imports Tailwind v4 and Geist Sans/Geist Mono variable fonts from Fontsource. Semantic light-theme CSS variables and shadcn-compatible Tailwind mappings already exist.
+- `components.json` configures the shadcn New York conventions, CSS variables, aliases, and Lucide icons.
+- React Hook Form, Zod, `@hookform/resolvers`, Zustand, and Lucide are already declared; no duplicate UI or state libraries were found in the client manifest.
+
+Gaps confirmed for later Phase 2 milestones:
+
+- No Hairline registry components or reusable UI components exist in the source tree.
+- There is no theme provider, dark/system token set, or persisted theme preference. Current tokens are light-only and the primary color is neutral rather than the specified Relio blue.
+- `AppRouter` currently has one catch-all route with a null element; there are no route layouts or placeholder pages.
+- No application shell, shared component patterns, notification/toast provider, or tooltip provider exists.
+- The prepared form and client-state dependencies are not used in the current source, but are retained as planned stack dependencies; no dependency removal was warranted by this audit.
+
+Validation:
+
+- `pnpm --filter @relio/client typecheck` — passed.
+- Source search confirmed the router is the only existing route/UI integration among the inspected patterns.
+
+No application code or dependencies were changed during this audit. Hairline discovery and integration remain in Milestone 2.2.
 
 ## Milestone 2.2 — Hairline UI Integration
 
-- [ ] Review official Hairline UI documentation.
-- [ ] Inspect available Hairline UI components.
-- [ ] Inspect Hairline CLI and installation workflow.
-- [ ] Review the installed Hairline MCP integration.
-- [ ] Use the MCP documentation and component discovery capabilities when available.
-- [ ] Integrate Hairline UI using its recommended conventions.
-- [ ] Verify compatibility with React 19 and Tailwind CSS v4.
-- [ ] Verify compatibility with existing shadcn conventions.
-- [ ] Avoid duplicating components already provided by Hairline.
-- [ ] Verify that installed components work correctly.
-- [ ] Document any integration limitations.
+**Status:** Completed
+
+- [x] Review official Hairline UI documentation.
+- [x] Inspect available Hairline UI components.
+- [x] Inspect Hairline CLI and installation workflow.
+- [x] Review the installed Hairline MCP integration.
+- [x] Use the MCP documentation and component discovery capabilities when available.
+- [x] Integrate Hairline UI using its recommended conventions.
+- [x] Verify compatibility with React 19 and Tailwind CSS v4.
+- [x] Verify compatibility with existing shadcn conventions.
+- [x] Avoid duplicating components already provided by Hairline.
+- [x] Verify that installed components work correctly.
+- [x] Document any integration limitations.
+
+### Milestone 2.2 Integration Record
+
+Used the Hairline MCP component list, discovery search, component documentation, source inspection, and package-manager-specific install command. Installed the reusable base `Button` and `Input` components with their shared helpers through the documented shadcn registry flow.
+
+Added client source files:
+
+- `apps/client/src/components/button.tsx`
+- `apps/client/src/components/input.tsx`
+- `apps/client/src/components/field.tsx`
+- `apps/client/src/components/text-morph.tsx`
+- `apps/client/src/components/ui-interaction-motion.ts`
+
+The installation added no npm dependencies and made no changes to `components.json`, the lockfile, or global CSS. The components use the existing semantic tokens, React 19 APIs, Lucide-compatible slots, and reduced-motion behavior. No competing UI library or duplicate component implementation was introduced.
+
+Validation:
+
+- `pnpm dlx shadcn@latest info -c apps/client` — recognized Vite, Tailwind v4, React SPA configuration, aliases, and Lucide.
+- `pnpm --filter @relio/client typecheck` — passed.
+- `pnpm --filter @relio/client lint` — passed with four non-blocking `react-refresh/only-export-components` warnings in Hairline's shared `field.tsx` utility exports.
+- `pnpm --filter @relio/client build` — passed.
+- `pnpm exec prettier --check` on the five added files — passed.
+- Editor diagnostics reported no errors in the added files.
+
+Limitations: the shadcn CLI's Installed Components list reports only its own registry and does not enumerate the separately installed Hairline files. The app still has no route that renders UI, so visual and interactive verification is deferred until the application shell is added. Light/Dark/System theme support is not part of this integration milestone.
 
 ## Milestone 2.3 — Design Tokens & Visual Foundation
 
-- [ ] Establish Relio's visual design direction.
-- [ ] Configure semantic color tokens.
-- [ ] Configure primary blue accent.
-- [ ] Configure background and foreground tokens.
-- [ ] Configure card and popover tokens.
-- [ ] Configure primary and secondary tokens.
-- [ ] Configure muted and accent tokens.
-- [ ] Configure destructive and success states.
-- [ ] Configure border and input tokens.
-- [ ] Configure focus ring tokens.
-- [ ] Configure chart color tokens.
-- [ ] Configure sidebar tokens.
-- [ ] Configure radius and sizing conventions.
-- [ ] Avoid arbitrary hardcoded colors.
-- [ ] Ensure components use semantic design tokens.
-- [ ] Review Hairline default tokens before overriding them.
+**Status:** Completed
+
+- [x] Establish Relio's visual design direction.
+- [x] Configure semantic color tokens.
+- [x] Configure primary blue accent.
+- [x] Configure background and foreground tokens.
+- [x] Configure card and popover tokens.
+- [x] Configure primary and secondary tokens.
+- [x] Configure muted and accent tokens.
+- [x] Configure destructive and success states.
+- [x] Configure border and input tokens.
+- [x] Configure focus ring tokens.
+- [x] Configure chart color tokens.
+- [x] Configure sidebar tokens.
+- [x] Configure radius and sizing conventions.
+- [x] Avoid arbitrary hardcoded colors.
+- [x] Ensure components use semantic design tokens.
+- [x] Review Hairline default tokens before overriding them.
+
+### Milestone 2.3 Token Record
+
+Updated `apps/client/src/styles/globals.css` with a restrained cool-neutral surface palette, Relio blue primary accent, semantic success/warning/info/destructive colors, differentiated chart colors, and dedicated sidebar tokens. Light tokens are the default; matching dark tokens are available through `.dark`, with a `prefers-color-scheme: dark` fallback unless `.light` is explicitly selected.
+
+Tailwind v4 `@theme inline` now exposes semantic colors, chart/sidebar colors, radius sizes, and named page/section/control spacing and control-height utilities. Hairline components continue to consume the shared semantic variables; no component-specific palette was introduced.
+
+Validation:
+
+- Contrast calculation for 20 representative light/dark text and surface pairs — all met or exceeded 4.5:1.
+- `pnpm --filter @relio/client typecheck` — passed.
+- `pnpm --filter @relio/client lint` — passed with four existing non-blocking `react-refresh/only-export-components` warnings in Hairline's `field.tsx`.
+- `pnpm --filter @relio/client build` — passed.
+- `pnpm exec prettier --check apps/client/src/styles/globals.css` — passed.
+
+Theme selection UI, persistence, and pre-paint handling remain in Milestone 2.5; this milestone provides the semantic palettes and system CSS fallback only.
 
 ## Milestone 2.4 — Typography
 
-- [ ] Inspect Hairline's default typography.
-- [ ] Configure Geist Sans if not already provided.
-- [ ] Configure Geist Mono if needed.
-- [ ] Establish heading hierarchy.
-- [ ] Establish body text hierarchy.
-- [ ] Establish label and helper text styles.
-- [ ] Establish numeric and tabular data typography.
-- [ ] Verify typography across desktop and mobile.
+**Status:** Completed
+
+- [x] Inspect Hairline's default typography.
+- [x] Configure Geist Sans if not already provided.
+- [x] Configure Geist Mono if needed.
+- [x] Establish heading hierarchy.
+- [x] Establish body text hierarchy.
+- [x] Establish label and helper text styles.
+- [x] Establish numeric and tabular data typography.
+- [x] Verify typography across desktop and mobile.
+
+### Milestone 2.4 Typography Record
+
+Corrected the global font family names to match the Fontsource declarations: `Geist Variable` and `Geist Mono Variable`. No font dependency was added; both variable font packages were already installed and imported.
+
+Added Tailwind typography roles for display, page title, section title, body, small body, label, caption, and data. The global body baseline is Geist Sans at 15px/24px. Numeric and tabular components can use the existing `font-mono` family with `tabular-nums` alongside `text-data`.
+
+Validation:
+
+- `pnpm --filter @relio/client typecheck` — passed.
+- `pnpm --filter @relio/client lint` — passed with four existing non-blocking `react-refresh/only-export-components` warnings in Hairline's `field.tsx`.
+- `pnpm --filter @relio/client build` — passed.
+- `pnpm exec prettier --check apps/client/src/styles/globals.css` — passed.
+- Browser check confirmed Geist Sans at 15px/24px at 1280px and 375px viewport widths; both Geist variable font faces loaded when requested.
+
+Limitation: the router still renders no page, so actual heading, label, and table typography cannot yet be visually reviewed in context. The typography scale and responsive base metrics are in place; rendered component review remains for the application shell milestone.
 
 ## Milestone 2.5 — Theme Management
 
-- [ ] Implement Light theme.
-- [ ] Implement Dark theme.
-- [ ] Implement System theme.
-- [ ] Persist user theme preference.
-- [ ] Respect system preference when System is selected.
-- [ ] Prevent theme flashing where possible.
-- [ ] Verify all semantic tokens in both themes.
+- **Status:** In Progress
+
+- [x] Implement Light theme.
+- [x] Implement Dark theme.
+- [x] Implement System theme.
+- [x] Persist user theme preference.
+- [x] Respect system preference when System is selected.
+- [x] Prevent theme flashing where possible.
+- [x] Verify all semantic tokens in both themes.
 - [ ] Verify tables, dialogs, dropdowns, and side sheets in both themes.
 - [ ] Verify charts and illustrations in both themes.
-- [ ] Add reusable theme switcher.
+- [x] Add reusable theme switcher.
+
+### Milestone 2.5 Theme Management Record
+
+Added `ThemeProvider`, its shared context/hook, and a reusable `ThemeSwitcher` wrapper around Hairline's segmented `ThemeToggle`. `AppProviders` now wraps the application in the theme provider. The preference (`light`, `dark`, or `system`) is stored as `relio-theme` in localStorage; the provider applies the matching root class and tracks operating-system color-scheme changes while System is selected. An inline bootstrap in `apps/client/index.html` applies the stored/system theme before the React module loads. Invalid stored values fall back to System, and restricted localStorage does not prevent the current session from changing themes. Hairline's registry component was installed without replacing the existing `TextMorph` source or adding a package dependency.
+
+Validation:
+
+- `pnpm --filter @relio/client typecheck` — passed.
+- `pnpm --filter @relio/client lint` — passed with the four existing non-blocking Fast Refresh warnings in Hairline's `field.tsx`; theme code adds no warnings.
+- `pnpm --filter @relio/client build` — passed.
+- Prettier check on all changed theme files — passed.
+- Browser check — all 38 semantic color tokens resolved in both themes, 37 changed between light and dark, explicit Light/Dark classes worked, and System followed a live OS color-scheme change.
+
+Remaining verification is blocked by the absence of rendered tables, dialogs, dropdowns, side sheets, charts, and illustrations. These surfaces are not yet implemented in the active codebase, so Milestone 2.5 remains In Progress until they can be checked in context. No later milestone was started.
 
 ## Milestone 2.6 — Global Application Providers
 
@@ -1731,8 +1839,8 @@ Do not update documents with fictional or unverified implementation status.
 
 **Next Phase:** Phase 2 — Frontend Foundation & Design System.
 
-**Next Milestone:** Milestone 2.1 — Existing Frontend Audit.
+**Next Milestone:** Milestone 2.5 — Theme Management.
 
-Before implementation, inspect the repository, current dependencies, existing UI setup, and Hairline UI integration documentation.
+Complete the remaining theme-surface verification when the referenced UI components are available. Do not start a later milestone while 2.5 remains incomplete.
 
 Do not start Phase 3 or implement CRM business modules before Phase 2 is completed and reviewed.

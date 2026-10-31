@@ -20,8 +20,9 @@ This section describes code that exists in the repository. Planned features and 
 ### Client
 
 - React 19, Vite, TypeScript, Tailwind CSS v4 through `@tailwindcss/vite`, React Router, TanStack Query, React Hook Form, Zod, Zustand, Lucide, and Geist variable fonts from Fontsource.
-- shadcn-compatible `components.json` and semantic CSS variables are configured. Hairline UI registry components are not installed; no UI components have been added from the registry.
-- The application has a React entry point, app component, router, provider composition, and shared QueryClient. The router currently renders an empty catch-all route; there are no product pages, theme provider, completed design system, or CRM features.
+- shadcn-compatible `components.json` and semantic CSS variables are configured. `globals.css` defines light/dark semantic palettes, a system dark-mode fallback, Relio blue, status/chart/sidebar tokens, Tailwind v4 radius/spacing mappings, and a Geist typography scale. Geist Sans and Mono are loaded from Fontsource using their declared `Geist Variable` and `Geist Mono Variable` family names. Hairline's `Button` and `Input` components are source-installed with their `Field`, `TextMorph`, and interaction-motion helpers under `src/components/`; no additional runtime package is required. The shadcn CLI's installed-component listing covers the shadcn registry and does not enumerate these Hairline registry files.
+- `ThemeProvider` supports Light, Dark, and System preferences, persists the selection in browser localStorage, and follows OS color-scheme changes in System mode. An inline script in `index.html` applies the initial theme before React loads. `ThemeSwitcher` wraps Hairline's segmented `ThemeToggle` in controlled mode; it is not yet placed on a product page.
+- The application has a React entry point, app component, router, provider composition, and shared QueryClient. The router currently renders an empty catch-all route; there are no product pages or CRM features.
 - Vite is configured for port `3000`; TypeScript and Vite both resolve the `@/*` source alias.
 
 ### Server
@@ -261,7 +262,14 @@ Database models will be implemented in Phase 4.
 - **Decision:** Use Tailwind CSS v4's Vite integration and shadcn-compatible configuration; add Hairline components from its registry only when needed.
 - **Reason:** The PRD selects this UI stack and Hairline components are source-installed rather than a redundant runtime component package.
 - **Alternatives considered:** Add another component library or install registry components speculatively; neither is needed for the foundation.
-- **Impact:** The project is registry-ready, but no Hairline components or product UI are claimed as implemented.
+- **Impact:** Hairline source components are added only when needed; the project currently includes its base Button and Input primitives without adding another runtime component library. Additional UI and product screens remain unimplemented.
+
+### Semantic Design Tokens
+
+- **Decision:** Define semantic light and dark tokens in the client global stylesheet and map them through Tailwind CSS v4's `@theme inline`; use a theme provider for Light/Dark/System selection and browser-local persistence, with an inline pre-paint bootstrap and CSS system fallback.
+- **Reason:** Hairline and future shared components should consume one semantic contract across themes, including brand, status, chart, and sidebar roles, without scattered hardcoded colors.
+- **Alternatives considered:** Keep neutral-only tokens or assign colors per component; neither supports the specified Relio brand or consistent theming. Deferring all persistence until authentication would prevent theme choice in this phase; localStorage is used until authenticated preference storage is implemented in Phase 5.
+- **Impact:** Existing components can use the same token names in light and dark contexts. System selection follows live OS changes, and the initial palette is selected before React loads to reduce flashing. Persistence is browser-local for now.
 
 ### pnpm Build-Script Approval
 
@@ -275,7 +283,7 @@ Database models will be implemented in Phase 4.
 - **Decision:** Load Geist Sans and Geist Mono using Fontsource variable-font packages.
 - **Reason:** The `geist` package exposes Next.js font loaders rather than Vite-compatible CSS entrypoints.
 - **Alternatives considered:** Use the Next.js-oriented package or omit the requested fonts; Fontsource works directly with Vite.
-- **Impact:** Font CSS and assets are included in the Vite build.
+- **Impact:** Font CSS and assets are included in the Vite build. The global stack uses Fontsource's declared `Geist Variable` and `Geist Mono Variable` family names, with shared Tailwind roles for headings, body copy, labels, captions, and tabular data.
 
 ### Deferred Database Startup
 
