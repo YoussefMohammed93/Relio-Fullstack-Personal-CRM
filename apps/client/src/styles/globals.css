@@ -18,7 +18,7 @@
   --card-foreground: oklch(0.22 0.012 255);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.22 0.012 255);
-  --primary: oklch(0.32 0.14 255);
+  --primary: oklch(50.154% 0.21162 260.614);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.96 0.01 250);
   --secondary-foreground: oklch(0.26 0.018 255);
@@ -217,6 +217,58 @@
   --spacing-control-sm: var(--control-height-sm);
   --spacing-control-md: var(--control-height-md);
   --spacing-control-lg: var(--control-height-lg);
+  @keyframes ui-col-in {
+    from {
+      max-width: 0;
+      opacity: 0;
+    }
+    to {
+      max-width: 1em;
+      opacity: 1;
+    }
+  }
+  @keyframes ui-col-out {
+    from {
+      max-width: 1em;
+      opacity: 1;
+    }
+    to {
+      max-width: 0;
+      opacity: 0;
+    }
+  }
+  @keyframes ui-empty-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+      filter: blur(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+  @keyframes ui-empty-out {
+    from {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-4px);
+      filter: blur(4px);
+    }
+  }
+  @keyframes ui-progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
 }
 
 @layer base {

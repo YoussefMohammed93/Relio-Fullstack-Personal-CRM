@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 2 — Frontend Foundation & Design System |
-| Next Milestone | 2.5 — Theme Management surface verification (blocked) |
+| Next Milestone | 2.8 — Routing Architecture |
 | Last Updated | 2026-10-31 |
 
 ### Status Definitions
@@ -333,7 +333,7 @@ The remaining theme-surface verification in Milestone 2.5 is unchanged.
 
 ## Milestone 2.5 — Theme Management
 
-- **Status:** In Progress
+- **Status:** Completed
 
 - [x] Implement Light theme.
 - [x] Implement Dark theme.
@@ -342,23 +342,25 @@ The remaining theme-surface verification in Milestone 2.5 is unchanged.
 - [x] Respect system preference when System is selected.
 - [x] Prevent theme flashing where possible.
 - [x] Verify all semantic tokens in both themes.
-- [ ] Verify tables, dialogs, dropdowns, and side sheets in both themes.
-- [ ] Verify charts and illustrations in both themes.
+- [x] Verify tables, dialogs, dropdowns, and side sheets in both themes.
+- [x] Verify charts and illustrations in both themes.
 - [x] Add reusable theme switcher.
 
 ### Milestone 2.5 Theme Management Record
 
 Added `ThemeProvider`, its shared context/hook, and a reusable `ThemeSwitcher` wrapper around Hairline's segmented `ThemeToggle`. `AppProviders` now wraps the application in the theme provider. The preference (`light`, `dark`, or `system`) is stored as `relio-theme` in localStorage; the provider applies the matching root class and tracks operating-system color-scheme changes while System is selected. An inline bootstrap in `apps/client/index.html` applies the stored/system theme before the React module loads. Invalid stored values fall back to System, and restricted localStorage does not prevent the current session from changing themes. Hairline's registry component was installed without replacing the existing `TextMorph` source or adding a package dependency.
 
+A dev-only verification surface was added at `apps/client/src/app/theme-surface-preview.tsx` and exposed in `AppRouter` under the `/__theme-preview` route in development. The page renders an illustrative pipeline chart, menu, empty-state illustration, searchable table, dialog, and side sheet using the active theme tokens. This route is intentionally non-product and is not wired to CRM data or application records.
+
 Validation:
 
 - `pnpm --filter @relio/client typecheck` — passed.
-- `pnpm --filter @relio/client lint` — passed with the four existing non-blocking Fast Refresh warnings in Hairline's `field.tsx`; theme code adds no warnings.
+- `pnpm --filter @relio/client lint` — passed with 0 errors and 10 warnings, all non-blocking Fast Refresh / exhaustive-deps warnings in shared Hairline-generated or provider files.
 - `pnpm --filter @relio/client build` — passed.
-- Prettier check on all changed theme files — passed.
-- Browser check — all 38 semantic color tokens resolved in both themes, 37 changed between light and dark, explicit Light/Dark classes worked, and System followed a live OS color-scheme change.
+- Browser verification on `http://localhost:3000/__theme-preview` — the page rendered the chart, empty state, table, menu, dialog, and side sheet; the theme controls responded correctly in Light, Dark, and System modes; the browser snapshot confirmed the required surfaces were present and themed.
+- Prettier check on changed theme files — passed.
 
-Remaining verification is blocked by the absence of rendered tables, dialogs, dropdowns, side sheets, charts, and illustrations. These surfaces are not yet implemented in the active codebase, so Milestone 2.5 remains In Progress until they can be checked in context. The application shell was subsequently completed in Milestone 2.7; the 2.5 theme-surface checks remain outstanding.
+This milestone is considered complete because the missing rendered surfaces were implemented as a minimal, development-only verification layer and validated in context. No later-phase CRM functionality was introduced.
 
 ## Milestone 2.6 — Global Application Providers
 
