@@ -19,10 +19,10 @@ This section describes code that exists in the repository. Planned features and 
 
 ### Client
 
-- React 19, Vite, TypeScript, Tailwind CSS v4 through `@tailwindcss/vite`, React Router, TanStack Query, React Hook Form, Zod, Zustand, Lucide, and Geist variable fonts from Fontsource.
-- shadcn-compatible `components.json` and semantic CSS variables are configured. `globals.css` defines light/dark semantic palettes, a system dark-mode fallback, Relio blue, status/chart/sidebar tokens, Tailwind v4 radius/spacing mappings, and a Geist typography scale. Geist Sans and Mono are loaded from Fontsource using their declared `Geist Variable` and `Geist Mono Variable` family names. Hairline's `Button` and `Input` components are source-installed with their `Field`, `TextMorph`, and interaction-motion helpers under `src/components/`; no additional runtime package is required. The shadcn CLI's installed-component listing covers the shadcn registry and does not enumerate these Hairline registry files.
-- `ThemeProvider` supports Light, Dark, and System preferences, persists the selection in browser localStorage, and follows OS color-scheme changes in System mode. An inline script in `index.html` applies the initial theme before React loads. `ThemeSwitcher` wraps Hairline's segmented `ThemeToggle` in controlled mode; it is not yet placed on a product page.
-- The application has a React entry point, app component, router, provider composition, and shared QueryClient. The router currently renders an empty catch-all route; there are no product pages or CRM features.
+- React 19, Vite, TypeScript, Tailwind CSS v4 through `@tailwindcss/vite`, React Router, TanStack Query, React Hook Form, Zod, Zustand, Lucide, and the Inter Tight variable font from Fontsource.
+- shadcn-compatible `components.json` and semantic CSS variables are configured. `globals.css` defines light/dark semantic palettes, a system dark-mode fallback, Relio blue, status/chart/sidebar tokens, Tailwind v4 radius/spacing mappings, and a shared Inter Tight typography scale. The official Google Fonts Inter Tight family is self-hosted through `@fontsource-variable/inter-tight`; its variable face supports weights 100–900. The root font and Tailwind's `font-sans` use Inter Tight; `font-mono` retains a system monospace stack for technical contexts only. Hairline's `Button` and `Input` components are source-installed with their `Field`, `TextMorph`, and interaction-motion helpers under `src/components/`; no additional runtime package is required. The shadcn CLI's installed-component listing covers the shadcn registry and does not enumerate these Hairline registry files.
+- `ThemeProvider` supports Light, Dark, and System preferences, persists the selection in browser localStorage, and follows OS color-scheme changes in System mode. An inline script in `index.html` applies the initial theme before React loads. `ThemeSwitcher` wraps Hairline's segmented `ThemeToggle` in controlled mode and is displayed in the application shell.
+- The application has a React entry point, app component, router, provider composition, and shared QueryClient. The catch-all route renders `AppShell`, which provides responsive sidebar navigation, top navigation, breadcrumbs, a reusable page header, and the main content container. There are no CRM feature pages or product data workflows yet.
 - Vite is configured for port `3000`; TypeScript and Vite both resolve the `@/*` source alias.
 
 ### Server
@@ -225,7 +225,7 @@ Database models will be implemented in Phase 4.
 - Semantic CSS variables.
 - Blue accent color.
 - Light, Dark, and System themes.
-- Geist Sans and Geist Mono, subject to existing Hairline defaults.
+- Inter Tight as the primary interface font, with a system monospace fallback only for technical contexts.
 - Responsive layouts.
 - Avoid unnecessary shadows and arbitrary hardcoded colors.
 
@@ -278,12 +278,12 @@ Database models will be implemented in Phase 4.
 - **Alternatives considered:** Allow every dependency build script; rejected as unnecessarily broad.
 - **Impact:** Fresh dependency installs can build esbuild without weakening the policy for other dependencies.
 
-### Geist Font Delivery
+### Inter Tight Font Delivery
 
-- **Decision:** Load Geist Sans and Geist Mono using Fontsource variable-font packages.
-- **Reason:** The `geist` package exposes Next.js font loaders rather than Vite-compatible CSS entrypoints.
-- **Alternatives considered:** Use the Next.js-oriented package or omit the requested fonts; Fontsource works directly with Vite.
-- **Impact:** Font CSS and assets are included in the Vite build. The global stack uses Fontsource's declared `Geist Variable` and `Geist Mono Variable` family names, with shared Tailwind roles for headings, body copy, labels, captions, and tabular data.
+- **Decision:** Load the official Google Fonts Inter Tight variable family with `@fontsource-variable/inter-tight` and use it as the global sans font.
+- **Reason:** Fontsource provides Vite-compatible CSS and locally bundled WOFF2 assets, avoiding a runtime Google Fonts request while retaining the variable 100–900 weight range.
+- **Alternatives considered:** Use the Google Fonts stylesheet with preconnect hints; self-hosting through Fontsource avoids an external font request at runtime and fits the existing package-based setup.
+- **Impact:** A single global import bundles the font with the client build. The root and Tailwind `font-sans` share the `Inter Tight Variable` family; the generic `font-mono` utility remains available only for technical content.
 
 ### Deferred Database Startup
 

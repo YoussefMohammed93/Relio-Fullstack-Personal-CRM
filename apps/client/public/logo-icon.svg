@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <defs>
+    <linearGradient id="relio-icon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main Vertical Pillar -->
+  <rect x="4" y="4" width="10" height="40" rx="5" fill="url(#relio-icon-grad)" />
+  
+  <!-- Outer Connection Loop -->
+  <path d="M 14 9 
+           H 28 
+           C 35 9, 40 14, 40 21 
+           C 40 28, 35 33, 28 33 
+           H 14" stroke="url(#relio-icon-grad)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        
+  <!-- Growth Trajectory Leg -->
+  <path d="M 24 29 
+           L 38 43" stroke="url(#relio-icon-grad)" stroke-width="10" stroke-linecap="round" />
+        
+  <!-- Central Relationship Node -->
+  <circle cx="28" cy="21" r="3.5" fill="#FFFFFF" />
+</svg>

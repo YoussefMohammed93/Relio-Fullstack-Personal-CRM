@@ -1258,7 +1258,7 @@ Do not create unrelated colors for individual components.
 
 Primary typography:
 
-**Geist Sans**
+**Inter Tight**
 
 Usage:
 
@@ -1269,16 +1269,13 @@ Usage:
 - Form Labels.
 - General UI.
 
-Secondary typography:
+Technical monospace contexts:
 
-**Geist Mono**
+Use the platform's monospace fallback only where monospaced text is required.
 
 Usage:
 
-- IDs.
-- Numeric Metadata.
-- Technical Identifiers.
-- Monospaced Data.
+- Code and technical identifiers that benefit from monospaced alignment.
 
 Before installing or configuring fonts, inspect Hairline UI defaults and avoid duplicate font dependencies.
 

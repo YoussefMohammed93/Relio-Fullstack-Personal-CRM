@@ -289,7 +289,7 @@ export function Button({
         aria-disabled={isInert ? true : undefined}
         aria-busy={isBusy ? true : undefined}
         onClick={handleClick}
-        className={`relative inline-flex items-center justify-center font-medium select-none whitespace-nowrap cursor-pointer rounded-full disabled:cursor-default disabled:opacity-45 ${variant === "link" ? "transition-colors" : INTERACTION_PRESS} ${FOCUS} ${
+        className={`relative inline-flex items-center justify-center font-semibold select-none whitespace-nowrap cursor-pointer rounded-full disabled:cursor-default disabled:opacity-45 ${variant === "link" ? "transition-colors" : INTERACTION_PRESS} ${FOCUS} ${
           toneClass
         } ${cfg.height} ${cfg.padding} ${cfg.fontSize} ${className}`}
         {...props}

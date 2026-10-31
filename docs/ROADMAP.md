@@ -68,8 +68,8 @@ Establish the complete visual and technical foundation of the Relio frontend bef
 - Support System theme preference.
 
 ### 2.3 Typography
-- Geist Sans for the primary interface.
-- Geist Mono for IDs, metadata, and numeric identifiers.
+- Inter Tight for the primary interface, loaded as a variable font.
+- Use a system monospace fallback only for contexts that genuinely require it.
 - Verify existing Hairline font configuration before installing additional font dependencies.
 - Establish heading, body, label, and caption typography scales.
 

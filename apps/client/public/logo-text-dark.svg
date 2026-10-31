@@ -1,0 +1,45 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 240 64"
+  width="240"
+  height="64"
+  fill="none"
+>
+  <defs>
+    <linearGradient id="relio-blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(8, 8)">
+    <rect x="4" y="4" width="10" height="40" rx="5" fill="url(#relio-blue-grad)" />
+    <path
+      d="M 14 9 H 28 C 35 9, 40 14, 40 21 C 40 28, 35 33, 28 33 H 14"
+      stroke="url(#relio-blue-grad)"
+      stroke-width="10"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      fill="none"
+    />
+    <path
+      d="M 24 29 L 38 43"
+      stroke="url(#relio-blue-grad)"
+      stroke-width="10"
+      stroke-linecap="round"
+    />
+    <circle cx="28" cy="21" r="3.5" fill="#FFFFFF" />
+  </g>
+
+  <text
+    x="68"
+    y="43"
+    font-family="'Inter Tight Variable', 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="34"
+    font-weight="700"
+    letter-spacing="-1.2"
+    fill="#F8FAFC"
+  >
+    Relio
+  </text>
+</svg>

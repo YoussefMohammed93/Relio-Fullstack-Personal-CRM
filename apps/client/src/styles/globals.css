@@ -1,10 +1,9 @@
 @import "tailwindcss";
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
+@import "@fontsource-variable/inter-tight";
 
 :root {
   color-scheme: light;
-  font-family: "Geist Variable", sans-serif;
+  font-family: "Inter Tight Variable", "Inter Tight", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -146,14 +145,15 @@
 }
 
 @theme inline {
-  --font-sans: "Geist Variable", sans-serif;
-  --font-mono: "Geist Mono Variable", monospace;
+  --font-sans: "Inter Tight Variable", "Inter Tight", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   --text-display: 2.25rem;
   --text-display--line-height: 2.75rem;
-  --text-display--font-weight: 600;
+  --text-display--font-weight: 700;
   --text-page-title: 1.75rem;
   --text-page-title--line-height: 2.25rem;
-  --text-page-title--font-weight: 600;
+  --text-page-title--font-weight: 700;
   --text-section-title: 1.25rem;
   --text-section-title--line-height: 1.75rem;
   --text-section-title--font-weight: 600;
@@ -220,6 +220,22 @@
 }
 
 @layer base {
+  .brand-wordmark-light {
+    display: block;
+  }
+
+  .brand-wordmark-dark {
+    display: none;
+  }
+
+  .dark .brand-wordmark-light {
+    display: none;
+  }
+
+  .dark .brand-wordmark-dark {
+    display: block;
+  }
+
   * {
     border-color: var(--border);
   }

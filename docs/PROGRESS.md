@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 2 — Frontend Foundation & Design System |
-| Next Milestone | 2.5 — Theme Management |
+| Next Milestone | 2.5 — Theme Management surface verification (blocked) |
 | Last Updated | 2026-10-31 |
 
 ### Status Definitions
@@ -190,7 +190,7 @@ Reusable foundation:
 
 - React 19, Vite, TypeScript, Tailwind CSS v4 through `@tailwindcss/vite`, React Router, and the `@/*` source alias are configured.
 - `AppProviders` already provides the shared TanStack Query client. The client uses a 30-second query stale time, one retry, and disables refetch-on-window-focus.
-- `globals.css` imports Tailwind v4 and Geist Sans/Geist Mono variable fonts from Fontsource. Semantic light-theme CSS variables and shadcn-compatible Tailwind mappings already exist.
+- At the time of this audit, `globals.css` imported variable fonts through Fontsource. Semantic light-theme CSS variables and shadcn-compatible Tailwind mappings already existed; the current font implementation is recorded in Milestone 2.4 below.
 - `components.json` configures the shadcn New York conventions, CSS variables, aliases, and Lucide icons.
 - React Hook Form, Zod, `@hookform/resolvers`, Zustand, and Lucide are already declared; no duplicate UI or state libraries were found in the client manifest.
 
@@ -292,8 +292,8 @@ Theme selection UI, persistence, and pre-paint handling remain in Milestone 2.5;
 **Status:** Completed
 
 - [x] Inspect Hairline's default typography.
-- [x] Configure Geist Sans if not already provided.
-- [x] Configure Geist Mono if needed.
+- [x] Configure Inter Tight as the primary interface font.
+- [x] Retain a generic monospace fallback only for technical contexts.
 - [x] Establish heading hierarchy.
 - [x] Establish body text hierarchy.
 - [x] Establish label and helper text styles.
@@ -302,9 +302,9 @@ Theme selection UI, persistence, and pre-paint handling remain in Milestone 2.5;
 
 ### Milestone 2.4 Typography Record
 
-Corrected the global font family names to match the Fontsource declarations: `Geist Variable` and `Geist Mono Variable`. No font dependency was added; both variable font packages were already installed and imported.
+The original typography implementation has been replaced with the official Google Fonts Inter Tight variable family, self-hosted through `@fontsource-variable/inter-tight`. Its variable face supports weights 100–900; the interface uses 400 body text, 500 labels/data, 600 buttons/section headings, and 700 display/page titles. The global body baseline remains 15px/24px. Tailwind v4's `font-sans` and the root font-family share Inter Tight, while its `font-mono` utility uses a generic system stack for technical contexts only.
 
-Added Tailwind typography roles for display, page title, section title, body, small body, label, caption, and data. The global body baseline is Geist Sans at 15px/24px. Numeric and tabular components can use the existing `font-mono` family with `tabular-nums` alongside `text-data`.
+Tailwind typography roles remain configured for display, page title, section title, body, small body, label, caption, and data. Numeric and tabular data use the existing `text-data` role and tabular number styling without making a separate mono family the general interface font.
 
 Validation:
 
@@ -312,9 +312,24 @@ Validation:
 - `pnpm --filter @relio/client lint` — passed with four existing non-blocking `react-refresh/only-export-components` warnings in Hairline's `field.tsx`.
 - `pnpm --filter @relio/client build` — passed.
 - `pnpm exec prettier --check apps/client/src/styles/globals.css` — passed.
-- Browser check confirmed Geist Sans at 15px/24px at 1280px and 375px viewport widths; both Geist variable font faces loaded when requested.
+- The Inter Tight replacement is documented in the Typography Replacement Record below; its responsive and theme behavior inherits the existing root typography baseline.
 
 Limitation: the router still renders no page, so actual heading, label, and table typography cannot yet be visually reviewed in context. The typography scale and responsive base metrics are in place; rendered component review remains for the application shell milestone.
+
+### Typography Replacement Record — 2026-10-31
+
+Replaced the prior sans and mono font dependencies with `@fontsource-variable/inter-tight`. The font is imported once from `globals.css`, bundled as WOFF2 assets by Vite, and applied through the root family and Tailwind v4 `--font-sans` token. The package's variable face supports weights 100–900. Both light and dark themes inherit the same typography; no theme-specific font overrides were added. Updated both SVG wordmarks and the PRD, roadmap, and architecture references. Milestone and phase status are unchanged.
+
+Validation:
+
+- `pnpm install --no-frozen-lockfile` — passed; replaced the prior font packages with the Inter Tight variable package and updated the lockfile.
+- `pnpm format` — passed.
+- `pnpm lint` — passed with zero errors and six existing non-blocking Fast Refresh warnings.
+- `pnpm typecheck` — passed for all workspace packages.
+- `pnpm build` — passed for shared, client, and server packages; the client emitted Inter Tight variable WOFF2 assets.
+- Browser verification — the computed body family is `Inter Tight Variable`, weights 400 and 700 load, and the 15px/24px body baseline remains unchanged. Light and Dark themes use the same font. At 320px and 375px viewport widths, the document has no horizontal overflow.
+
+The remaining theme-surface verification in Milestone 2.5 is unchanged.
 
 ## Milestone 2.5 — Theme Management
 
@@ -343,36 +358,74 @@ Validation:
 - Prettier check on all changed theme files — passed.
 - Browser check — all 38 semantic color tokens resolved in both themes, 37 changed between light and dark, explicit Light/Dark classes worked, and System followed a live OS color-scheme change.
 
-Remaining verification is blocked by the absence of rendered tables, dialogs, dropdowns, side sheets, charts, and illustrations. These surfaces are not yet implemented in the active codebase, so Milestone 2.5 remains In Progress until they can be checked in context. No later milestone was started.
+Remaining verification is blocked by the absence of rendered tables, dialogs, dropdowns, side sheets, charts, and illustrations. These surfaces are not yet implemented in the active codebase, so Milestone 2.5 remains In Progress until they can be checked in context. The application shell was subsequently completed in Milestone 2.7; the 2.5 theme-surface checks remain outstanding.
 
 ## Milestone 2.6 — Global Application Providers
 
-- [ ] Implement the application provider composition.
-- [ ] Configure Router provider.
-- [ ] Configure TanStack Query provider.
-- [ ] Configure Theme provider.
-- [ ] Configure global notification/toast provider.
-- [ ] Configure global tooltip provider if required.
-- [ ] Keep provider composition clean and maintainable.
-- [ ] Avoid unnecessary nested providers.
+**Status:** Completed
+
+- [x] Implement the application provider composition.
+- [x] Configure Router provider.
+- [x] Configure TanStack Query provider.
+- [x] Configure Theme provider.
+- [x] Configure global notification/toast provider.
+- [x] Configure global tooltip provider if required.
+- [x] Keep provider composition clean and maintainable.
+- [x] Avoid unnecessary nested providers.
+
+### Milestone 2.6 Provider Composition Record
+
+Added a dedicated `NotificationProvider` and `TooltipProvider`, and composed them within the existing `ThemeProvider` + `QueryClientProvider` chain in `AppProviders`. The router remains encapsulated in `AppRouter`, and the provider tree now keeps application-wide concerns in one place without unnecessary nesting. The provider layer is ready for the upcoming shell and route milestones without introducing a new UI dependency or duplicating existing client infrastructure.
+
+Validation:
+
+- `pnpm --filter @relio/client typecheck` — passed.
+- `pnpm --filter @relio/client lint` — passed with six non-blocking Fast Refresh warnings shared by the existing Hairline `field.tsx` export pattern and the new provider files.
+- `pnpm --filter @relio/client build` — passed.
+
+Milestone 2.7 — Application Shell is now completed. Milestone 2.5's remaining theme-surface verification is still outstanding because those UI surfaces are not yet implemented; no CRM feature work began.
 
 ## Milestone 2.7 — Application Shell
 
-- [ ] Implement the main application layout.
-- [ ] Implement responsive sidebar.
-- [ ] Implement sidebar navigation structure.
-- [ ] Implement active navigation states.
-- [ ] Implement sidebar collapse/expand behavior.
-- [ ] Implement mobile navigation behavior.
-- [ ] Implement top navigation bar.
-- [ ] Implement breadcrumbs component.
-- [ ] Implement reusable page header.
-- [ ] Implement profile menu placeholder.
-- [ ] Implement notification access placeholder.
-- [ ] Implement global search trigger placeholder.
-- [ ] Implement main content container.
-- [ ] Establish consistent page spacing.
-- [ ] Verify layout responsiveness.
+**Status:** Completed
+
+- [x] Implement the main application layout.
+- [x] Implement responsive sidebar.
+- [x] Implement sidebar navigation structure.
+- [x] Implement active navigation states.
+- [x] Implement sidebar collapse/expand behavior.
+- [x] Implement mobile navigation behavior.
+- [x] Implement top navigation bar.
+- [x] Implement breadcrumbs component.
+- [x] Implement reusable page header.
+- [x] Implement profile menu placeholder.
+- [x] Implement notification access placeholder.
+- [x] Implement global search trigger placeholder.
+- [x] Implement main content container.
+- [x] Establish consistent page spacing.
+- [x] Verify layout responsiveness.
+
+### Milestone 2.7 Application Shell Record
+
+Added `AppShell` as the catch-all route layout with responsive sidebar navigation, active states, desktop collapse, a mobile drawer, top navigation, breadcrumbs, reusable page header, and a constrained main content container. Search and profile actions provide explicit placeholder feedback; notification access links to its shell navigation entry. The existing theme switcher is available in the shell. No CRM pages or route groups were added; those remain in Milestone 2.8.
+
+Files:
+
+- `apps/client/src/app/layouts/app-shell.tsx`
+- `apps/client/src/components/breadcrumbs.tsx`
+- `apps/client/src/components/page-header.tsx`
+- `apps/client/src/router/AppRouter.tsx`
+
+Validation:
+
+- `pnpm --filter @relio/client typecheck` — passed.
+- `pnpm --filter @relio/client lint` — passed with six existing non-blocking Fast Refresh warnings in shared provider/component files.
+- `pnpm --filter @relio/client build` — passed.
+- `pnpm exec prettier --check` on the changed client files — passed.
+- Browser verification at 1440px, 375px, and 320px — no horizontal overflow at 1440px or 320px; desktop collapse and active navigation worked; mobile navigation opened and closed after selecting a route; the search placeholder returned feedback.
+- Editor diagnostics — no errors in changed client files.
+
+Milestone 2.5 remains In Progress. Its table, dialog, dropdown, side-sheet, chart, and illustration theme checks remain blocked until those surfaces are implemented. Phase 2 remains In Progress, and the next action is to resolve that verification blocker before starting another milestone.
 
 ## Milestone 2.8 — Routing Architecture
 
