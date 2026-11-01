@@ -193,6 +193,7 @@ export function ComponentSurfacePreview() {
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <SearchInput
+                label="Search preview contacts"
                 placeholder="Search preview contacts"
                 shortcut={null}
                 onSearch={setSearch}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Activity,
   Bell,
@@ -53,6 +53,10 @@ const pageTitles = new Map(
 export function AppShell() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const mobileNavigationRef = useRef<HTMLElement>(null);
+  const mobileNavigationTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileNavigationCloseRef = useRef<HTMLButtonElement>(null);
+  const wasMobileOpen = useRef(false);
   const location = useLocation();
   const { notify } = useNotifications();
   const pageTitle =
@@ -63,14 +67,61 @@ export function AppShell() {
     "Workspace";
 
   useEffect(() => {
-    if (!isMobileOpen) return;
+    if (!isMobileOpen) {
+      if (
+        wasMobileOpen.current &&
+        mobileNavigationTriggerRef.current?.getClientRects().length
+      ) {
+        mobileNavigationTriggerRef.current.focus();
+      }
+      wasMobileOpen.current = false;
+      return;
+    }
 
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsMobileOpen(false);
+    wasMobileOpen.current = true;
+    mobileNavigationCloseRef.current?.focus();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setIsMobileOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusableElements = Array.from(
+        mobileNavigationRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      ).filter((element) => element.getClientRects().length > 0);
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (!firstElement || !lastElement) {
+        event.preventDefault();
+        return;
+      }
+
+      if (!mobileNavigationRef.current?.contains(document.activeElement)) {
+        event.preventDefault();
+        firstElement.focus();
+      } else if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
     };
 
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isMobileOpen]);
 
   const closeMobileNavigation = () => setIsMobileOpen(false);
@@ -81,15 +132,21 @@ export function AppShell() {
         <button
           type="button"
           aria-label="Close navigation"
+          aria-hidden="true"
+          tabIndex={-1}
           className="fixed inset-0 z-40 bg-foreground/30 md:hidden"
           onClick={closeMobileNavigation}
         />
       ) : null}
 
       <aside
+        id="app-navigation"
         aria-label="Application sidebar"
-        className={`fixed inset-y-0 inset-s-0 z-50 flex w-64 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 md:relative md:z-auto md:translate-x-0 ${
-          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+        role={isMobileOpen ? "dialog" : undefined}
+        aria-modal={isMobileOpen ? true : undefined}
+        ref={mobileNavigationRef}
+        className={`fixed inset-y-0 inset-s-0 z-50 flex w-64 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 motion-reduce:transition-none md:relative md:z-auto md:translate-x-0 md:visible ${
+          isMobileOpen ? "translate-x-0 visible" : "-translate-x-full invisible"
         } ${isCollapsed ? "md:w-19" : "md:w-64"}`}
       >
         <div
@@ -132,6 +189,7 @@ export function AppShell() {
           <button
             type="button"
             aria-label="Close navigation"
+            ref={mobileNavigationCloseRef}
             className="grid size-9 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring md:hidden"
             onClick={closeMobileNavigation}
           >
@@ -157,7 +215,7 @@ export function AppShell() {
                   <li key={to}>
                     <NavLink
                       to={to}
-                      end={to === "/"}
+                      end={to === "/app"}
                       title={isCollapsed ? label : undefined}
                       onClick={closeMobileNavigation}
                       className={({ isActive }) =>
@@ -188,13 +246,15 @@ export function AppShell() {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col" inert={isMobileOpen}>
         <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <button
               type="button"
               aria-label="Open navigation"
+              aria-controls="app-navigation"
               aria-expanded={isMobileOpen}
+              ref={mobileNavigationTriggerRef}
               className="grid size-9 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
               onClick={() => setIsMobileOpen(true)}
             >

@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 2 — Frontend Foundation & Design System |
-| Next Milestone | 2.10 — Responsive & Accessibility Foundation |
+| Next Milestone | 2.11 — Phase Validation |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -523,21 +523,55 @@ Validation:
 - `pnpm format:check` — passed.
 - Browser verification at `/__components-preview` — rendered the component surface; selecting a different `PillSelect` option updated its value and the toast action displayed a dismissible notification. The requested 375px viewport was reported by the integrated browser as 469 CSS px (450px document client/scroll width); no horizontal document overflow was present at the measured width. Exact 320px/375px responsive checks remain in Milestone 2.10.
 
-Phase 2 remains In Progress. The next incomplete milestone is 2.10 — Responsive & Accessibility Foundation.
+Phase 2 remains In Progress. The next incomplete milestone is 2.11 — Phase Validation.
 
 ## Milestone 2.10 — Responsive & Accessibility Foundation
 
-- [ ] Verify desktop layouts.
-- [ ] Verify laptop layouts.
-- [ ] Verify tablet layouts.
-- [ ] Verify mobile layouts.
-- [ ] Verify keyboard navigation.
-- [ ] Verify visible focus states.
-- [ ] Verify semantic HTML.
-- [ ] Verify form labels.
-- [ ] Verify dialog accessibility.
-- [ ] Verify sufficient color contrast.
-- [ ] Verify reduced-motion preferences where applicable.
+**Status:** Completed
+
+- [x] Verify desktop layouts.
+- [x] Verify laptop layouts.
+- [x] Verify tablet layouts.
+- [x] Verify mobile layouts.
+- [x] Verify keyboard navigation.
+- [x] Verify visible focus states.
+- [x] Verify semantic HTML.
+- [x] Verify form labels.
+- [x] Verify dialog accessibility.
+- [x] Verify sufficient color contrast.
+- [x] Verify reduced-motion preferences where applicable.
+
+### Milestone 2.10 Responsive & Accessibility Record
+
+Responsive and accessibility verification covered the application shell and development-only component preview. The shell's closed mobile sidebar is now hidden from keyboard and accessibility navigation while remaining visible at desktop breakpoints. The mobile drawer moves focus into the panel, traps Tab/Shift+Tab, closes on Escape or route selection, restores focus to its opener, makes the page inert, and locks background scrolling. Overview navigation now matches only `/app` instead of remaining active on nested routes. Removed the global 320px body minimum that caused horizontal overflow when the browser's vertical scrollbar reduced the content width; added a programmatic label to the preview SearchInput.
+
+Browser verification:
+
+- Application shell at 320px, 375px, 768px, 1024px, and 1440px CSS widths — no horizontal overflow; mobile navigation was available only below the desktop breakpoint; desktop sidebar remained visible.
+- Component preview at the same widths — no horizontal overflow after removing the body minimum width.
+- Mobile keyboard behavior — focus entered the drawer, wrapped at both focus boundaries, Escape closed it, scroll/inert state was released, and focus returned to the opener. Selecting a route closed the drawer and left exactly one active navigation item.
+- Closed mobile sidebar — offscreen links could not receive focus; desktop links remained available.
+- Visible focus — keyboard navigation applied the visible focus ring to the active navigation item.
+- Semantics and labels — one main landmark, named primary navigation, one page heading, and programmatic labels for all preview inputs and textareas.
+- Dialog preview — native modal dialog had an associated title, placed focus inside the panel, and returned focus to its trigger after close.
+- Color contrast — six representative text/surface and button pairs in both Light and Dark themes measured at least 6.06:1.
+- Reduced motion — `prefers-reduced-motion: reduce` matched and the sidebar transition property computed to `none`.
+
+Files changed:
+
+- `apps/client/src/app/layouts/app-shell.tsx`
+- `apps/client/src/app/component-surface-preview.tsx`
+- `apps/client/src/styles/globals.css`
+
+Validation:
+
+- Prettier check on the three changed client files — passed.
+- `pnpm --filter @relio/client lint` — passed with 0 errors and 12 non-blocking warnings in existing components/providers.
+- `pnpm --filter @relio/client typecheck` — passed.
+- `pnpm --filter @relio/client build` — passed.
+- Browser verification was performed interactively; the repository does not yet have an automated browser test framework.
+
+No Architecture or Roadmap update was needed. Phase 2 remains In Progress; the next incomplete milestone is 2.11 — Phase Validation.
 
 ## Milestone 2.11 — Phase Validation
 
@@ -1937,6 +1971,6 @@ Do not update documents with fictional or unverified implementation status.
 
 **Next Phase:** Phase 2 — Frontend Foundation & Design System.
 
-**Next Milestone:** Milestone 2.9 — Reusable UI Components.
+**Next Milestone:** Milestone 2.11 — Phase Validation.
 
-Continue with Milestone 2.9. Do not start Phase 3 or implement CRM business modules before Phase 2 is completed and reviewed.
+Continue with Milestone 2.11. Do not start Phase 3 or implement CRM business modules before Phase 2 is completed and reviewed.
