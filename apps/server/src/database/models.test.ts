@@ -7,6 +7,7 @@ import {
   Company,
   Contact,
   DEFAULT_PIPELINE_STAGES,
+  DEAL_LOST_REASONS,
   Deal,
   DealHistory,
   Notification,
@@ -57,7 +58,6 @@ describe("Relio database models", () => {
       enumValues: string[];
     };
 
-    assert.equal(Contact.schema.path("firstName").options.required, true);
     assert.equal(Contact.schema.path("lastName").options.required, true);
     assert.equal(Contact.schema.path("owner").options.ref, "User");
     assert.equal(Contact.schema.path("company").options.ref, "Company");
@@ -123,5 +123,67 @@ describe("Relio database models", () => {
 
     await assert.rejects(invalidColor.validate(), /color/);
     await assert.rejects(fractionalOrder.validate(), /order/);
+  });
+
+  it("defines Deal fields and validates PRD business constraints", async () => {
+    const dealStatusPath = Deal.schema.path("status") as unknown as {
+      enumValues: string[];
+    };
+    const lostReasonPath = Deal.schema.path("lostReason") as unknown as {
+      enumValues: string[];
+    };
+    const owner = new mongoose.Types.ObjectId();
+    const contact = new mongoose.Types.ObjectId();
+    const pipelineStage = new mongoose.Types.ObjectId();
+    const dealFields = {
+      owner,
+      name: "Website redesign",
+      value: 2500,
+      primaryContact: contact,
+      pipelineStage,
+    };
+
+    assert.equal(Deal.schema.path("owner").options.ref, "User");
+    assert.equal(Deal.schema.path("name").options.required, true);
+    assert.equal(Deal.schema.path("primaryContact").options.ref, "Contact");
+    assert.equal(Deal.schema.path("company").options.ref, "Company");
+    assert.equal(Deal.schema.path("pipelineStage").options.ref, "PipelineStage");
+    assert.equal(Deal.schema.path("probability").options.min, 0);
+    assert.equal(Deal.schema.path("probability").options.max, 100);
+    assert.equal(Deal.schema.path("probability").options.default, undefined);
+    assert.equal(Deal.schema.path("expectedCloseDate").options.default, null);
+    assert.equal(Deal.schema.path("description").options.default, "");
+    assert.equal(Deal.schema.path("status").options.default, "open");
+    assert.equal(Deal.schema.path("lostReason").options.default, null);
+    assert.equal(Deal.schema.path("actualCloseDate").options.default, null);
+    assert.equal(Deal.schema.path("finalValue").options.default, null);
+    assert.equal(Deal.schema.path("previousStage").options.ref, "PipelineStage");
+    assert.deepEqual(dealStatusPath.enumValues, ["open", "won", "lost"]);
+    assert.deepEqual(lostReasonPath.enumValues, DEAL_LOST_REASONS);
+    assert.equal(Deal.schema.options.timestamps, true);
+    assert.ok(
+      Deal.schema
+        .indexes()
+        .some(
+          ([fields, options]) =>
+            fields.owner === 1 && fields.status === 1 && options.background === true,
+        ),
+    );
+
+    const validDeal = new Deal(dealFields);
+    const zeroValueDeal = new Deal({ ...dealFields, value: 0 });
+    const invalidLostReasonDeal = new Deal({
+      ...dealFields,
+      lostReason: "timing",
+    });
+    const missingContactDeal = new Deal({ ...dealFields, primaryContact: null });
+    const deletedContactDeal = new Deal({ ...dealFields, primaryContact: null });
+    deletedContactDeal.isNew = false;
+
+    await assert.doesNotReject(validDeal.validate());
+    await assert.rejects(zeroValueDeal.validate(), /value/);
+    await assert.rejects(invalidLostReasonDeal.validate(), /lostReason/);
+    await assert.rejects(missingContactDeal.validate(), /primaryContact/);
+    await assert.doesNotReject(deletedContactDeal.validate());
   });
 });

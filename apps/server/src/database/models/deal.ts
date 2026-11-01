@@ -1,18 +1,29 @@
 import mongoose, { Schema, type Model } from "mongoose";
 
+export const DEAL_LOST_REASONS = [
+  "price",
+  "competitor",
+  "no_response",
+  "not_interested",
+  "budget_issues",
+  "other",
+] as const;
+
+export type DealLostReason = (typeof DEAL_LOST_REASONS)[number];
+
 export interface IDeal {
   owner: mongoose.Types.ObjectId;
   name: string;
   value: number;
   currency: string;
-  primaryContact: mongoose.Types.ObjectId;
+  primaryContact: mongoose.Types.ObjectId | null;
   company?: mongoose.Types.ObjectId | null;
   pipelineStage: mongoose.Types.ObjectId;
-  probability: number;
+  probability?: number;
   expectedCloseDate?: Date | null;
   description?: string;
   status: "open" | "won" | "lost";
-  lostReason?: string;
+  lostReason: DealLostReason | null;
   actualCloseDate?: Date | null;
   finalValue?: number | null;
   previousStage?: mongoose.Types.ObjectId | null;
@@ -36,7 +47,10 @@ const dealSchema = new Schema<IDeal>(
     value: {
       type: Number,
       required: true,
-      min: 0,
+      validate: {
+        validator: (value: number) => Number.isFinite(value) && value > 0,
+        message: "Deal value must be greater than zero",
+      },
     },
     currency: {
       type: String,
@@ -46,7 +60,10 @@ const dealSchema = new Schema<IDeal>(
     primaryContact: {
       type: Schema.Types.ObjectId,
       ref: "Contact",
-      required: true,
+      required: function () {
+        return (this as unknown as mongoose.Document).isNew;
+      },
+      default: null,
       index: true,
     },
     company: {
@@ -64,7 +81,6 @@ const dealSchema = new Schema<IDeal>(
       type: Number,
       min: 0,
       max: 100,
-      default: 0,
     },
     expectedCloseDate: {
       type: Date,
@@ -81,7 +97,8 @@ const dealSchema = new Schema<IDeal>(
     },
     lostReason: {
       type: String,
-      default: "",
+      enum: DEAL_LOST_REASONS,
+      default: null,
     },
     actualCloseDate: {
       type: Date,

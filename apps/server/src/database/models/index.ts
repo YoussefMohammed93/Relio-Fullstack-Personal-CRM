@@ -1,7 +1,7 @@
 export { Activity } from "./activity.js";
 export { Company } from "./company.js";
 export { Contact } from "./contact.js";
-export { Deal } from "./deal.js";
+export { DEAL_LOST_REASONS, Deal } from "./deal.js";
 export { DealHistory } from "./deal-history.js";
 export { Notification } from "./notification.js";
 export { DEFAULT_PIPELINE_STAGES, PipelineStage } from "./pipeline-stage.js";

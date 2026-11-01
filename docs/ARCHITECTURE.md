@@ -43,6 +43,7 @@ This section describes code that exists in the repository. Planned features and 
 
 - Phase 4 Milestones 4.1–4.5 added the initial Mongoose schema layer under `apps/server/src/database/models/` for `User`, `Contact`, `Company`, `PipelineStage`, `Deal`, `Task`, `Activity`, `DealHistory`, and `Notification`. The `PipelineStage` schema validates six-digit hex colors and non-negative integer ordering, with a unique owner/order index; the PRD's four ordinary default stages are exported for the later seed milestone.
 - Deal terminal outcomes are modeled by `Deal.status` (`open`, `won`, `lost`), not as `PipelineStage` records. The schema set enforces the PRD ownership model, timestamps, primary identity constraints, and core relationship references needed before authentication and CRM modules are implemented.
+- Phase 4 Milestone 4.6 completed the Deal schema with owner-scoped query indexes, required-positive finite deal value, bounded optional probability, and enumerated lost reasons. A primary Contact is required on new Deals but supports null on persisted Deals after Contact deletion. Probability has no global schema default because the PRD requires it to derive from the selected stage; assignment is reserved for the later stage configuration/service work.
 - Domain relationships are intentionally modeled as owner-scoped references and optional historical/event records so user-owned data remains isolated and auditable as later phases build on the schema.
 
 ## 2. Target System Architecture (Planned)

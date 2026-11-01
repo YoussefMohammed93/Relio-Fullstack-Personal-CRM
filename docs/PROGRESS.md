@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 4 — Database Architecture & Data Modeling (In Progress) |
-| Next Milestone | Phase 4 — Milestone 4.6 Deal Model |
+| Next Milestone | Phase 4 — Milestone 4.7 Task Model |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -871,22 +871,30 @@ Milestone 3.3 is complete. Phase 3 is complete after secure rotation and validat
 
 ## Milestone 4.6 — Deal Model
 
-- [ ] Define deal name.
-- [ ] Define deal value.
-- [ ] Define primary Contact reference.
-- [ ] Define optional Company reference.
-- [ ] Define Pipeline Stage reference.
-- [ ] Define probability.
-- [ ] Define expected closing date.
-- [ ] Define description.
-- [ ] Define status.
-- [ ] Define lost reason.
-- [ ] Define actual closing date.
-- [ ] Define final deal value.
-- [ ] Define previous ordinary stage for reopening.
-- [ ] Define owner reference.
-- [ ] Define timestamps.
-- [ ] Add appropriate indexes.
+- [x] Define deal name.
+- [x] Define deal value.
+- [x] Define primary Contact reference.
+- [x] Define optional Company reference.
+- [x] Define Pipeline Stage reference.
+- [x] Define probability.
+- [x] Define expected closing date.
+- [x] Define description.
+- [x] Define status.
+- [x] Define lost reason.
+- [x] Define actual closing date.
+- [x] Define final deal value.
+- [x] Define previous ordinary stage for reopening.
+- [x] Define owner reference.
+- [x] Define timestamps.
+- [x] Add appropriate indexes.
+
+### Milestone 4.6 Implementation Record
+
+- Completed `Deal` in `apps/server/src/database/models/deal.ts` with owner, required name/value, Contact and PipelineStage references, optional Company, probability, expected close date, description, status, lost reason, close date/value, and previous stage fields. Existing owner/status and owner/expected-close indexes remain in place.
+- Deal value now requires a finite number greater than zero. Lost reasons are restricted to `price`, `competitor`, `no_response`, `not_interested`, `budget_issues`, and `other`, exported as `DEAL_LOST_REASONS`.
+- A primary Contact is required for new Deals but may be null on a persisted Deal after Contact deletion. Probability remains optional and bounded from 0 to 100 without a global schema default; stage-based assignment belongs to the later Deal service and stage configuration work.
+- Added model contract tests for references, fields, defaults, indexes, positive value, lost-reason options, new-Deal contact requirements, and post-deletion null Contact behavior.
+- Verification: `pnpm --filter @relio/server exec node --import tsx --test src/database/models.test.ts` — 7/7 tests passed; `pnpm --filter @relio/server typecheck` — passed; `pnpm --filter @relio/server lint` — passed; `pnpm --filter @relio/server build` — passed; Prettier check on the three changed server files — passed.
 
 ## Milestone 4.7 — Task Model
 
