@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 4 — Database Architecture & Data Modeling (In Progress) |
-| Next Milestone | Phase 4 — Milestone 4.5 Pipeline Stage Model |
+| Next Milestone | Phase 4 — Milestone 4.6 Deal Model |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -853,14 +853,21 @@ Milestone 3.3 is complete. Phase 3 is complete after secure rotation and validat
 
 ## Milestone 4.5 — Pipeline Stage Model
 
-- [ ] Define stage name.
-- [ ] Define stage color.
-- [ ] Define stage order.
-- [ ] Define default stages.
-- [ ] Define owner reference.
-- [ ] Define timestamps.
-- [ ] Define terminal Deal statuses separately from ordinary stages.
-- [ ] Add appropriate indexes.
+- [x] Define stage name.
+- [x] Define stage color.
+- [x] Define stage order.
+- [x] Define default stages.
+- [x] Define owner reference.
+- [x] Define timestamps.
+- [x] Define terminal Deal statuses separately from ordinary stages.
+- [x] Add appropriate indexes.
+
+### Milestone 4.5 Implementation Record
+
+- Completed `PipelineStage` in `apps/server/src/database/models/pipeline-stage.ts` with an owner reference, required trimmed name, validated six-digit hex color, non-negative integer order, default marker, and timestamps. A unique `{ owner, order }` index provides owner-scoped ordering without a redundant owner-only index.
+- Exported the four PRD ordinary defaults (`New`, `Qualified`, `Proposal`, `Negotiation`) as `DEFAULT_PIPELINE_STAGES` for the development seed milestone. Won and Lost remain Deal statuses; the previous `stageType` field was removed so terminal statuses are not represented as ordinary stage records.
+- Added model contract coverage for default stages, status separation, owner/order indexing, color validation, and integer ordering in `apps/server/src/database/models.test.ts`.
+- Verification: `pnpm --filter @relio/server exec node --import tsx --test src/database/models.test.ts` — 6/6 tests passed; `pnpm --filter @relio/server typecheck` — passed; `pnpm --filter @relio/server lint` — passed; `pnpm --filter @relio/server build` — passed; Prettier check on the three changed server files — passed.
 
 ## Milestone 4.6 — Deal Model
 

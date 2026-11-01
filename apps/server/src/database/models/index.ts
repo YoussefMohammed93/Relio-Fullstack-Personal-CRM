@@ -4,6 +4,6 @@ export { Contact } from "./contact.js";
 export { Deal } from "./deal.js";
 export { DealHistory } from "./deal-history.js";
 export { Notification } from "./notification.js";
-export { PipelineStage } from "./pipeline-stage.js";
+export { DEFAULT_PIPELINE_STAGES, PipelineStage } from "./pipeline-stage.js";
 export { Task } from "./task.js";
 export { User } from "./user.js";

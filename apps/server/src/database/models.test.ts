@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
+import mongoose from "mongoose";
 import { describe, it } from "node:test";
 
 import {
   Activity,
   Company,
   Contact,
+  DEFAULT_PIPELINE_STAGES,
   Deal,
   DealHistory,
   Notification,
@@ -51,7 +53,9 @@ describe("Relio database models", () => {
   });
 
   it("defines the required contact profile fields and relationship rules", () => {
-    const contactTypePath = Contact.schema.path("contactType") as any;
+    const contactTypePath = Contact.schema.path("contactType") as unknown as {
+      enumValues: string[];
+    };
 
     assert.equal(Contact.schema.path("firstName").options.required, true);
     assert.equal(Contact.schema.path("lastName").options.required, true);
@@ -76,5 +80,48 @@ describe("Relio database models", () => {
     assert.equal(Company.schema.path("logoUrl").instance, "String");
     assert.equal(Company.schema.path("tags").instance, "Array");
     assert.equal(Company.schema.path("address").instance, "Embedded");
+  });
+
+  it("defines ordered default pipeline stages and keeps terminal states on deals", async () => {
+    assert.deepEqual(
+      DEFAULT_PIPELINE_STAGES.map(({ name, order }) => [name, order]),
+      [
+        ["New", 0],
+        ["Qualified", 1],
+        ["Proposal", 2],
+        ["Negotiation", 3],
+      ],
+    );
+    assert.ok(DEFAULT_PIPELINE_STAGES.every(({ isDefault }) => isDefault));
+    assert.equal(PipelineStage.schema.path("owner").options.ref, "User");
+    assert.equal(PipelineStage.schema.path("stageType"), undefined);
+    const dealStatusPath = Deal.schema.path("status") as unknown as {
+      enumValues: string[];
+    };
+    assert.deepEqual(dealStatusPath.enumValues, ["open", "won", "lost"]);
+    assert.ok(
+      PipelineStage.schema
+        .indexes()
+        .some(
+          ([fields, options]) =>
+            fields.owner === 1 && fields.order === 1 && options.unique === true,
+        ),
+    );
+
+    const invalidColor = new PipelineStage({
+      owner: new mongoose.Types.ObjectId(),
+      name: "New",
+      color: "blue",
+      order: 0,
+    });
+    const fractionalOrder = new PipelineStage({
+      owner: new mongoose.Types.ObjectId(),
+      name: "Qualified",
+      color: "#0ea5e9",
+      order: 1.5,
+    });
+
+    await assert.rejects(invalidColor.validate(), /color/);
+    await assert.rejects(fractionalOrder.validate(), /order/);
   });
 });

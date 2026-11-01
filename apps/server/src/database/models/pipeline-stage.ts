@@ -6,10 +6,19 @@ export interface IPipelineStage {
   color: string;
   order: number;
   isDefault: boolean;
-  stageType: "standard" | "won" | "lost";
   createdAt: Date;
   updatedAt: Date;
 }
+
+export const DEFAULT_PIPELINE_STAGES = [
+  { name: "New", color: "#64748b", order: 0, isDefault: true },
+  { name: "Qualified", color: "#0ea5e9", order: 1, isDefault: true },
+  { name: "Proposal", color: "#2563eb", order: 2, isDefault: true },
+  { name: "Negotiation", color: "#f59e0b", order: 3, isDefault: true },
+] as const satisfies readonly Pick<
+  IPipelineStage,
+  "name" | "color" | "order" | "isDefault"
+>[];
 
 const pipelineStageSchema = new Schema<IPipelineStage>(
   {
@@ -17,7 +26,6 @@ const pipelineStageSchema = new Schema<IPipelineStage>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
     name: {
       type: String,
@@ -28,20 +36,17 @@ const pipelineStageSchema = new Schema<IPipelineStage>(
       type: String,
       required: true,
       default: "#3b82f6",
+      match: /^#[0-9a-fA-F]{6}$/,
     },
     order: {
       type: Number,
       required: true,
       min: 0,
+      validate: Number.isInteger,
     },
     isDefault: {
       type: Boolean,
       default: false,
-    },
-    stageType: {
-      type: String,
-      enum: ["standard", "won", "lost"],
-      default: "standard",
     },
   },
   { timestamps: true },
