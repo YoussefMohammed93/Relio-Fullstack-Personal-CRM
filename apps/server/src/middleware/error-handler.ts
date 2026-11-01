@@ -12,6 +12,8 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
   }
 
   response.status(statusCode).json({
+    success: false,
+    data: null,
     error: {
       message,
       ...(env.NODE_ENV === "development" && error instanceof Error
