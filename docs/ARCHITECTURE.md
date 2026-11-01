@@ -31,6 +31,7 @@ This section describes code that exists in the repository. Planned features and 
 - Implemented middleware includes CORS, JSON parsing, cookie parsing, 404 handling, and centralized error handling.
 - Zod validates environment variables. `GET /api/v1/health` returns the basic health response.
 - A Mongoose connection helper exists but is not called during startup. JWT secret access and secure HTTP-only cookie options are prepared; authentication is not implemented.
+- Cloudinary is the selected company-logo image store. The upload module validates JPEG, PNG, and WebP file signatures, enforces a 5 MiB in-memory upload limit, and uploads to a fixed `relio/company-logos` folder. Its route factory requires caller-supplied authentication middleware and remains unmounted until Phase 5 implements authentication.
 
 ### Shared Package and Validation
 
@@ -291,5 +292,12 @@ Database models will be implemented in Phase 4.
 - **Reason:** Phase 1 must not require Atlas credentials or a live database just to start the API.
 - **Alternatives considered:** Connect at process startup; deferred until Phase 3 database lifecycle work.
 - **Impact:** The health route can run without MongoDB; database readiness and production connection lifecycle remain incomplete.
+
+### Cloudinary Company Logo Storage
+
+- **Decision:** Store uploaded company logos in Cloudinary, using the server SDK and server-only credentials.
+- **Reason:** The PRD allows user-uploaded company logos, and Cloudinary provides hosted image storage and secure delivery without storing image binaries in MongoDB.
+- **Alternatives considered:** Local disk storage is unsuitable for horizontally scaled or ephemeral application hosts; MongoDB binary storage is unnecessary for this image use case.
+- **Impact:** Uploads are constrained to JPEG, PNG, or WebP, capped at 5 MiB, and stored under a fixed folder with a 1200-pixel dimension limit. The route requires an authentication middleware parameter and is not mounted until Phase 5 supplies real authentication. Runtime credentials are read from `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in the server's ignored `.env`; no environment template is retained in the repository.
 
 Do not silently change established architectural decisions. When a real architectural decision changes, record the decision, reason, alternatives, and impact here.

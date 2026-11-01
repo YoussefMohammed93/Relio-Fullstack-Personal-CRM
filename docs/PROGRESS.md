@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 3 — Backend Infrastructure & API Foundation (In Progress) |
-| Next Milestone | Complete the remaining Phase 3 backend foundation milestones |
+| Next Milestone | Milestone 3.7 — Backend Validation |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -133,7 +133,7 @@ Implemented files and modules:
 - Root configuration: `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `tsconfig.base.json`, `eslint.config.js`, `prettier.config.js`, `.gitignore`, `.prettierignore`, and `README.md`.
 - Client configuration: `apps/client/package.json`, `index.html`, `vite.config.ts`, `tsconfig.json`, and `components.json`.
 - Client modules: `src/main.tsx`, `src/app/App.tsx`, `src/providers/AppProviders.tsx`, `src/router/AppRouter.tsx`, `src/lib/query-client.ts`, and `src/styles/globals.css`; extension directories exist for components, features, hooks, shared code, and types. No product routes or feature components are implemented.
-- Server configuration and modules: `apps/server/package.json`, `tsconfig.json`, `.env.example`, `src/app.ts`, `src/server.ts`, `src/config/env.ts`, `src/config/security.ts`, `src/database/connect.ts`, `src/errors/AppError.ts`, `src/middleware/error-handler.ts`, `src/middleware/not-found.ts`, and `src/modules/health/health.routes.ts`.
+- Server configuration and modules: `apps/server/package.json`, `tsconfig.json`, `src/app.ts`, `src/server.ts`, `src/config/env.ts`, `src/config/security.ts`, `src/database/connect.ts`, `src/errors/AppError.ts`, `src/middleware/error-handler.ts`, `src/middleware/not-found.ts`, and `src/modules/health/health.routes.ts`.
 - Shared: `packages/shared/package.json`, `tsconfig.json`, and `src/index.ts` provide `@relio/shared` exports and generic JSON types. No CRM/domain models are present.
 
 Validation results recorded for the completed foundation:
@@ -655,11 +655,17 @@ No Architecture update was needed because no architectural decision changed. Pha
 - [x] Establish consistent error response structure.
 - [x] Establish API status code conventions.
 - [x] Establish API versioning conventions.
-- [ ] Establish pagination response conventions.
+- [x] Establish pagination response conventions.
 - [ ] Establish filtering conventions.
 - [ ] Establish sorting conventions.
-- [ ] Establish request validation conventions.
+- [x] Establish request validation conventions.
 - [ ] Establish controller/service responsibilities.
+
+### Milestone 3.3 API Standards Record
+
+- Added shared response helpers for API payload envelopes and pagination metadata to keep backend responses consistent across routes.
+- Added request validation middleware built on Zod so incoming body, query, and params payloads can be validated before controller logic runs.
+- Updated the health route and global error handler to use the shared success/error response contract.
 
 ## Milestone 3.4 — Security & Middleware
 
@@ -675,23 +681,39 @@ No Architecture update was needed because no architectural decision changed. Pha
 
 ## Milestone 3.5 — Shared Backend Utilities
 
-- [ ] Implement reusable pagination utility.
-- [ ] Implement reusable filtering utility.
-- [ ] Implement reusable sorting utility.
-- [ ] Implement reusable validation helpers.
-- [ ] Implement reusable API response helpers.
-- [ ] Implement reusable error classes.
-- [ ] Implement ownership-checking utilities where appropriate.
+- [x] Implement reusable pagination utility.
+- [x] Implement reusable filtering utility.
+- [x] Implement reusable sorting utility.
+- [x] Implement reusable validation helpers.
+- [x] Implement reusable API response helpers.
+- [x] Implement reusable error classes.
+- [x] Implement ownership-checking utilities where appropriate.
+
+### Milestone 3.5 Shared Backend Utilities Record
+
+- Added shared pagination, filtering, and sorting helpers for backend query construction and request normalization.
+- Added reusable validation helpers for sanitizing text, parsing positive integers, validating Mongo ObjectIds, and enforcing ownership checks.
+- Added shared error classes that extend the existing AppError contract so backend modules can reuse a consistent validation, not-found, and forbidden response pattern.
 
 ## Milestone 3.6 — File Upload Foundation
 
-- [ ] Select an appropriate image storage approach.
-- [ ] Configure upload validation.
-- [ ] Validate file type.
-- [ ] Validate file size.
-- [ ] Prepare company logo upload support.
-- [ ] Secure upload endpoints.
-- [ ] Document storage configuration.
+- [x] Select an appropriate image storage approach.
+- [x] Configure upload validation.
+- [x] Validate file type.
+- [x] Validate file size.
+- [x] Prepare company logo upload support.
+- [x] Secure upload endpoints.
+- [x] Document storage configuration.
+
+### Milestone 3.6 File Upload Foundation Record
+
+- Selected Cloudinary for company-logo image storage. The server validates Cloudinary configuration as an all-or-none set of environment variables. Runtime values are supplied through the ignored `apps/server/.env`; no environment template is retained in the repository.
+- Added an in-memory single-file upload parser with a 5 MiB limit, one-file/one-part limits, and content-signature validation restricted to JPEG, PNG, and WebP. Browser-provided MIME types are not trusted.
+- Added a Cloudinary upload service that stores images under `relio/company-logos`, requests secure URLs, and limits dimensions to 1200 by 1200 pixels.
+- Added a company-logo route factory that requires authentication middleware to be supplied by the caller. It is intentionally not mounted because authentication is not implemented until Phase 5; no unauthenticated upload endpoint is exposed in Phase 3.
+- Multer file-size and parsing errors now use the standard API error envelope with 413 or 400 status codes.
+- Validation: 12 server tests passed; server lint, production TypeScript build, and Prettier check passed. The upload tests load the server environment schema. External Cloudinary upload was not attempted; provider credentials and network access were not verified against Cloudinary.
+- Security follow-up: a failed patch response exposed the existing database URI and JWT value in tool output. Rotate those credentials before relying on them; Cloudinary credentials should also be rotated if exposed in shared logs.
 
 ## Milestone 3.7 — Backend Validation
 
@@ -1990,8 +2012,8 @@ Do not update documents with fictional or unverified implementation status.
 
 # 4. Current Next Action
 
-**Next Phase:** Phase 3 — Backend Infrastructure & API Foundation (Not Started).
+**Current Phase:** Phase 3 — Backend Infrastructure & API Foundation (In Progress).
 
-**Next Milestone:** Await the user's instruction before beginning Phase 3.
+**Next Milestone:** Milestone 3.7 — Backend Validation.
 
-Phase 2 is complete. Do not start Phase 3 or implement CRM business modules until the user instructs you to continue.
+Milestones 3.1–3.6 are complete. Validate the backend foundation in Milestone 3.7, then stop before starting Phase 4 until the user instructs you to continue.
