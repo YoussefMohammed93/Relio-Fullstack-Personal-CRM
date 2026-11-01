@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 4 — Database Architecture & Data Modeling (In Progress) |
-| Next Milestone | Phase 4 — Milestone 4.11 Relationships & Data Integrity |
+| Next Milestone | Phase 4 — Milestone 4.12 Database Seed & Validation |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -982,17 +982,25 @@ Milestone 3.3 is complete. Phase 3 is complete after secure rotation and validat
 
 ## Milestone 4.11 — Relationships & Data Integrity
 
-- [ ] Ensure every user-owned record references its owner.
-- [ ] Ensure Contact can have zero or one Company.
-- [ ] Ensure Company can have multiple Contacts.
-- [ ] Ensure a new Deal requires a Primary Contact.
-- [ ] Ensure Deal can remain after Contact deletion.
-- [ ] Ensure Deal History survives Contact deletion.
-- [ ] Ensure Company deletion unlinks Contacts.
-- [ ] Ensure Company deletion unlinks Deals.
-- [ ] Ensure historical Activities are preserved when Company is deleted.
-- [ ] Define Pipeline Stage deletion and reassignment behavior.
-- [ ] Ensure user ownership is respected across references.
+- [x] Ensure every user-owned record references its owner.
+- [x] Ensure Contact can have zero or one Company.
+- [x] Ensure Company can have multiple Contacts.
+- [x] Ensure a new Deal requires a Primary Contact.
+- [x] Ensure Deal can remain after Contact deletion.
+- [x] Ensure Deal History survives Contact deletion.
+- [x] Ensure Company deletion unlinks Contacts.
+- [x] Ensure Company deletion unlinks Deals.
+- [x] Ensure historical Activities are preserved when Company is deleted.
+- [x] Define Pipeline Stage deletion and reassignment behavior.
+- [x] Ensure user ownership is respected across references.
+
+### Milestone 4.11 Implementation Record
+
+- Added `apps/server/src/database/relationship-integrity.ts` with an owner-scoped reference guard and MongoDB-session transaction helpers for relationship deletions.
+- Contact deletion removes its related Tasks and Activities, nulls retained Deals' `primaryContact`, and leaves DealHistory records untouched. Company deletion unlinks Contacts and Deals and deletes only the Company, leaving historical Activities and DealHistory records untouched.
+- Pipeline Stage deletion counts both current and previous-stage Deal references. A replacement owned by the same user is required when referenced; current and previous stage links are reassigned before the stage is deleted.
+- Extended model contract tests to verify owner requirements and the deletion/reassignment policy through an injected integrity store. Future CRM create/update services must use `assertOwnedReferences` when validating related records.
+- Verification: the server test suite (`api`, `query`, `validation`, upload, and model tests) — 25/25 passed; `pnpm --filter @relio/server typecheck` — passed; `pnpm --filter @relio/server lint` — passed; `pnpm --filter @relio/server build` — passed; Prettier check on the integrity service and model tests — passed. Live MongoDB transaction integration was not separately exercised; it remains in Milestone 4.12 validation.
 
 ## Milestone 4.12 — Database Seed & Validation
 

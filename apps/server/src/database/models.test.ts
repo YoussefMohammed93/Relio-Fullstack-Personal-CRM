@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import mongoose from "mongoose";
 import { describe, it } from "node:test";
+import type { ClientSession } from "mongoose";
 
 import {
   Activity,
@@ -17,6 +18,11 @@ import {
   Task,
   User,
 } from "./models/index.js";
+import {
+  createRelationshipIntegrityService,
+  type IntegrityMutation,
+  type RelationshipIntegrityStore,
+} from "./relationship-integrity.js";
 
 describe("Relio database models", () => {
   it("exposes the required domain models", () => {
@@ -34,9 +40,23 @@ describe("Relio database models", () => {
   it("uses owner references and unique identity constraints for user-owned data", () => {
     assert.equal(User.schema.path("email").options.unique, true);
     assert.equal(User.schema.path("username").options.unique, true);
+
+    assert.equal(Contact.schema.path("owner").options.ref, "User");
+    assert.equal(Contact.schema.path("owner").options.required, true);
+    assert.equal(Company.schema.path("owner").options.ref, "User");
+    assert.equal(Company.schema.path("owner").options.required, true);
+    assert.equal(PipelineStage.schema.path("owner").options.ref, "User");
+    assert.equal(PipelineStage.schema.path("owner").options.required, true);
     assert.equal(Deal.schema.path("owner").options.ref, "User");
+    assert.equal(Deal.schema.path("owner").options.required, true);
     assert.equal(Task.schema.path("owner").options.ref, "User");
+    assert.equal(Task.schema.path("owner").options.required, true);
     assert.equal(Activity.schema.path("owner").options.ref, "User");
+    assert.equal(Activity.schema.path("owner").options.required, true);
+    assert.equal(DealHistory.schema.path("owner").options.ref, "User");
+    assert.equal(DealHistory.schema.path("owner").options.required, true);
+    assert.equal(Notification.schema.path("owner").options.ref, "User");
+    assert.equal(Notification.schema.path("owner").options.required, true);
   });
 
   it("defines the required user profile defaults and authentication fields", () => {
@@ -467,5 +487,79 @@ describe("Relio database models", () => {
     await assert.rejects(notificationWithOnlyType.validate(), /relatedEntityId/);
     await assert.rejects(notificationWithOnlyId.validate(), /relatedEntityId/);
     await assert.rejects(notificationRelatedToUser.validate(), /relatedEntityType/);
+  });
+
+  it("enforces owner-scoped relationships and transactional deletion policies", async () => {
+    const owner = new mongoose.Types.ObjectId();
+    const otherOwner = new mongoose.Types.ObjectId();
+    const contactId = new mongoose.Types.ObjectId();
+    const companyId = new mongoose.Types.ObjectId();
+    const stageId = new mongoose.Types.ObjectId();
+    const replacementStageId = new mongoose.Types.ObjectId();
+    const validIds = new Set([
+      contactId.toString(),
+      companyId.toString(),
+      stageId.toString(),
+      replacementStageId.toString(),
+    ]);
+    const mutations: IntegrityMutation[] = [];
+    const fakeSession = {} as ClientSession;
+
+    async function runFakeTransaction<T>(
+      work: (session: ClientSession) => Promise<T>,
+    ): Promise<T> {
+      return work(fakeSession);
+    }
+
+    const store: RelationshipIntegrityStore = {
+      withTransaction: runFakeTransaction,
+      isOwnedReference: async (_type, ownerId, recordId) =>
+        ownerId.equals(owner) && validIds.has(recordId.toString()),
+      countStageReferences: async (ownerId, referencedStageId) =>
+        ownerId.equals(owner) && referencedStageId.equals(stageId) ? 1 : 0,
+      apply: async (mutation) => {
+        mutations.push(mutation);
+      },
+    };
+    const integrity = createRelationshipIntegrityService(store);
+
+    await integrity.assertOwnedReferences(owner, [
+      { type: "Contact", id: contactId },
+      { type: "Company", id: companyId },
+    ]);
+    await assert.rejects(
+      integrity.assertOwnedReferences(otherOwner, [{ type: "Contact", id: contactId }]),
+      /not found/,
+    );
+
+    await integrity.deleteContact(owner, contactId);
+    assert.deepEqual(
+      mutations.map(({ type }) => type),
+      [
+        "delete_contact_tasks",
+        "delete_contact_activities",
+        "unlink_contact_from_deals",
+        "delete_contact",
+      ],
+    );
+
+    await integrity.deleteCompany(owner, companyId);
+    assert.deepEqual(
+      mutations.slice(4).map(({ type }) => type),
+      ["unlink_company_from_contacts", "unlink_company_from_deals", "delete_company"],
+    );
+
+    await assert.rejects(
+      integrity.deletePipelineStage(owner, stageId),
+      /replacement stage/,
+    );
+    assert.equal(mutations.length, 7);
+
+    await integrity.deletePipelineStage(owner, stageId, replacementStageId);
+    assert.deepEqual(
+      mutations.slice(7).map(({ type }) => type),
+      ["reassign_stage_deals", "reassign_previous_stage", "delete_pipeline_stage"],
+    );
+    assert.ok(mutations.every((mutation) => mutation.ownerId.equals(owner)));
   });
 });
