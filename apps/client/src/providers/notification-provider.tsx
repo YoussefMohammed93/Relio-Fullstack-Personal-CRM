@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -88,9 +89,9 @@ export function NotificationProvider({ children }: PropsWithChildren) {
                 type="button"
                 aria-label={`Dismiss ${notification.title}`}
                 onClick={() => dismiss(notification.id)}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
-                ×
+                <X className="size-4 mt-0.5" />
               </button>
             </div>
           </div>

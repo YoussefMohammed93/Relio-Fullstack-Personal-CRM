@@ -28,20 +28,20 @@ const navigationGroups = [
   {
     label: "Workspace",
     items: [
-      { label: "Overview", to: "/", icon: LayoutDashboard },
-      { label: "Contacts", to: "/contacts", icon: UsersRound },
-      { label: "Companies", to: "/companies", icon: Building2 },
-      { label: "Deals", to: "/deals", icon: Handshake },
-      { label: "Tasks", to: "/tasks", icon: ListTodo },
-      { label: "Calendar", to: "/calendar", icon: CalendarDays },
-      { label: "Activities", to: "/activities", icon: Activity },
+      { label: "Overview", to: "/app", icon: LayoutDashboard },
+      { label: "Contacts", to: "/app/contacts", icon: UsersRound },
+      { label: "Companies", to: "/app/companies", icon: Building2 },
+      { label: "Deals", to: "/app/deals", icon: Handshake },
+      { label: "Tasks", to: "/app/tasks", icon: ListTodo },
+      { label: "Calendar", to: "/app/calendar", icon: CalendarDays },
+      { label: "Activities", to: "/app/activities", icon: Activity },
     ],
   },
   {
     label: "Account",
     items: [
-      { label: "Notifications", to: "/notifications", icon: Bell },
-      { label: "Settings", to: "/settings", icon: Settings },
+      { label: "Notifications", to: "/app/notifications", icon: Bell },
+      { label: "Settings", to: "/app/settings", icon: Settings },
     ],
   },
 ];
@@ -98,7 +98,7 @@ export function AppShell() {
           }`}
         >
           <NavLink
-            to="/"
+            to="/app"
             aria-label="Relio overview"
             onClick={closeMobileNavigation}
             className={`flex min-w-0 flex-1 items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring ${
@@ -230,7 +230,7 @@ export function AppShell() {
               <ThemeSwitcher />
             </div>
             <NavLink
-              to="/notifications"
+              to="/app/notifications"
               aria-label="Notifications"
               title="Notifications"
               className={({ isActive }) =>

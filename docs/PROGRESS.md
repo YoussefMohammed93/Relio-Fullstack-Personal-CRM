@@ -19,8 +19,8 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 2 — Frontend Foundation & Design System |
-| Next Milestone | 2.8 — Routing Architecture |
-| Last Updated | 2026-10-31 |
+| Next Milestone | 2.10 — Responsive & Accessibility Foundation |
+| Last Updated | 2026-11-01 |
 
 ### Status Definitions
 
@@ -385,7 +385,7 @@ Validation:
 - `pnpm --filter @relio/client lint` — passed with six non-blocking Fast Refresh warnings shared by the existing Hairline `field.tsx` export pattern and the new provider files.
 - `pnpm --filter @relio/client build` — passed.
 
-Milestone 2.7 — Application Shell is now completed. Milestone 2.5's remaining theme-surface verification is still outstanding because those UI surfaces are not yet implemented; no CRM feature work began.
+Milestone 2.7 — Application Shell is completed below. Theme-surface verification for Milestone 2.5 is recorded as completed above; no CRM feature work began.
 
 ## Milestone 2.7 — Application Shell
 
@@ -427,60 +427,103 @@ Validation:
 - Browser verification at 1440px, 375px, and 320px — no horizontal overflow at 1440px or 320px; desktop collapse and active navigation worked; mobile navigation opened and closed after selecting a route; the search placeholder returned feedback.
 - Editor diagnostics — no errors in changed client files.
 
-Milestone 2.5 remains In Progress. Its table, dialog, dropdown, side-sheet, chart, and illustration theme checks remain blocked until those surfaces are implemented. Phase 2 remains In Progress, and the next action is to resolve that verification blocker before starting another milestone.
+Milestone 2.5 theme-surface verification is recorded as completed above using the development-only preview route. Phase 2 remains In Progress; the next incomplete milestone is 2.9 — Reusable UI Components.
 
 ## Milestone 2.8 — Routing Architecture
 
-- [ ] Establish public route group.
-- [ ] Establish authentication route group.
-- [ ] Establish protected application route group.
-- [ ] Configure route layouts.
-- [ ] Configure nested routes where appropriate.
-- [ ] Add dashboard placeholder.
-- [ ] Add Contacts placeholder.
-- [ ] Add Companies placeholder.
-- [ ] Add Deals placeholder.
-- [ ] Add Tasks placeholder.
-- [ ] Add Calendar placeholder.
-- [ ] Add Activities placeholder.
-- [ ] Add Settings placeholder.
-- [ ] Add Not Found page.
-- [ ] Prepare route protection integration for Phase 5.
-- [ ] Avoid implementing actual authentication in this phase.
+- [x] Establish public route group.
+- [x] Establish authentication route group.
+- [x] Establish protected application route group.
+- [x] Configure route layouts.
+- [x] Configure nested routes where appropriate.
+- [x] Add dashboard placeholder.
+- [x] Add Contacts placeholder.
+- [x] Add Companies placeholder.
+- [x] Add Deals placeholder.
+- [x] Add Tasks placeholder.
+- [x] Add Calendar placeholder.
+- [x] Add Activities placeholder.
+- [x] Add Settings placeholder.
+- [x] Add Not Found page.
+- [x] Prepare route protection integration for Phase 5.
+- [x] Avoid implementing actual authentication in this phase.
+
+### Milestone 2.8 Routing Architecture Record
+
+Established three explicit route groups: `/` for the public placeholder, `/auth/*` for authentication placeholders, and `/app/*` for the workspace shell and its nested placeholder routes. The application group includes Dashboard, Contacts, Companies, Deals, Tasks, Calendar, Activities, Notifications, and Settings. Unknown URLs render a dedicated Not Found page; the development-only `/__theme-preview` route remains available.
+
+The `/app` group is not access-controlled yet. Phase 5 will add the actual authentication guard; no authentication logic or CRM workflows were introduced. Sidebar, overview, logo, and notification navigation now use `/app` paths.
+
+Files:
+
+- `apps/client/src/router/AppRouter.tsx`
+- `apps/client/src/router/route-pages.tsx`
+- `apps/client/src/app/layouts/app-shell.tsx`
+
+Validation:
+
+- Browser verification — `/` rendered the public placeholder, `/auth/login` rendered the authentication placeholder, `/app/contacts` rendered the application shell with the Contacts title and active navigation, and an unknown URL rendered the Not Found page.
+- `pnpm lint` — passed with zero errors and 10 existing warnings in shared components/providers.
+- `pnpm typecheck` — passed for all workspace packages.
+- `pnpm build` — passed for shared, client, and server packages.
+- `pnpm format:check` — passed.
+- No automated route test framework is configured; route behavior was checked in the browser.
+
+Phase 2 remains In Progress. The next incomplete milestone is 2.9 — Reusable UI Components.
 
 ## Milestone 2.9 — Reusable UI Components
 
+**Status:** Completed
+
 Implement or integrate reusable components using Hairline UI whenever available.
 
-- [ ] Buttons.
-- [ ] Inputs.
-- [ ] Textareas.
-- [ ] Selects.
-- [ ] Checkboxes.
-- [ ] Radio groups.
-- [ ] Switches.
-- [ ] Labels.
-- [ ] Form field wrappers.
-- [ ] Dialogs.
-- [ ] Alert dialogs.
-- [ ] Side sheets.
-- [ ] Dropdown menus.
-- [ ] Context menus where needed.
-- [ ] Tabs.
-- [ ] Tooltips.
-- [ ] Popovers.
-- [ ] Tables.
-- [ ] Badges.
-- [ ] Avatars.
-- [ ] Cards.
-- [ ] Skeletons.
-- [ ] Empty states.
-- [ ] Confirmation dialogs.
-- [ ] Toast notifications.
-- [ ] Loading indicators.
-- [ ] Pagination primitives.
-- [ ] Search input.
-- [ ] Filter controls.
+- [x] Buttons.
+- [x] Inputs.
+- [x] Textareas.
+- [x] Selects.
+- [x] Checkboxes.
+- [x] Radio groups.
+- [x] Switches.
+- [x] Labels.
+- [x] Form field wrappers.
+- [x] Dialogs.
+- [x] Alert dialogs.
+- [x] Side sheets.
+- [x] Dropdown menus.
+- [x] Context menus where needed.
+- [x] Tabs.
+- [x] Tooltips.
+- [x] Popovers.
+- [x] Tables.
+- [x] Badges.
+- [x] Avatars.
+- [x] Cards.
+- [x] Skeletons.
+- [x] Empty states.
+- [x] Confirmation dialogs.
+- [x] Toast notifications.
+- [x] Loading indicators.
+- [x] Pagination primitives.
+- [x] Search input.
+- [x] Filter controls.
+
+### Milestone 2.9 Reusable UI Components Record
+
+The reusable component foundation now covers the milestone checklist using Hairline source components where already installed and local components built on the existing semantic tokens. `PillSelect` supplies the select/listbox control; `ConfirmationDialog` composes the dialog primitive for destructive decisions; `Sheet` supplies side sheets; and `DropdownMenu`/`MenuList` provide action menus. The notification provider renders dismissible toast notifications. No context-menu interaction is currently defined in the application, so a separate context-menu primitive was not added.
+
+Added or extended the component surface in `apps/client/src/components/`, including Avatar, Badge, Checkbox, ConfirmationDialog, FilterBar, Pagination, Popover, RadioGroup, SearchInput, Skeleton, Spinner, Switch, Tabs, Textarea, Tooltip, and Card. Shared skeleton/loading animation tokens were added to `apps/client/src/styles/globals.css`.
+
+Added the development-only `/__components-preview` route and `apps/client/src/app/component-surface-preview.tsx`. It exercises the shared controls, overlays, table, filter/search, states, and toast with local fixture state only; it does not read or modify CRM records.
+
+Validation:
+
+- `pnpm --filter @relio/client typecheck` — passed.
+- `pnpm --filter @relio/client lint` — passed with zero errors and 12 non-blocking warnings (Fast Refresh export warnings and existing `NumberRoll` hook warnings).
+- `pnpm --filter @relio/client build` — passed.
+- `pnpm format:check` — passed.
+- Browser verification at `/__components-preview` — rendered the component surface; selecting a different `PillSelect` option updated its value and the toast action displayed a dismissible notification. The requested 375px viewport was reported by the integrated browser as 469 CSS px (450px document client/scroll width); no horizontal document overflow was present at the measured width. Exact 320px/375px responsive checks remain in Milestone 2.10.
+
+Phase 2 remains In Progress. The next incomplete milestone is 2.10 — Responsive & Accessibility Foundation.
 
 ## Milestone 2.10 — Responsive & Accessibility Foundation
 
@@ -1894,8 +1937,6 @@ Do not update documents with fictional or unverified implementation status.
 
 **Next Phase:** Phase 2 — Frontend Foundation & Design System.
 
-**Next Milestone:** Milestone 2.5 — Theme Management.
+**Next Milestone:** Milestone 2.9 — Reusable UI Components.
 
-Complete the remaining theme-surface verification when the referenced UI components are available. Do not start a later milestone while 2.5 remains incomplete.
-
-Do not start Phase 3 or implement CRM business modules before Phase 2 is completed and reviewed.
+Continue with Milestone 2.9. Do not start Phase 3 or implement CRM business modules before Phase 2 is completed and reviewed.

@@ -2009,8 +2009,8 @@ These rules apply to every development phase and every AI coding agent working o
 Phase 1 — Monorepo Initialization & Project Foundation is complete. Its
 implementation and validation record is maintained in `docs/PROGRESS.md`.
 
-The next milestone is Phase 2, Milestone 2.1 — Existing Frontend Audit. Do not
-begin Phase 2 implementation until the user instructs you to continue.
+The next milestone is Phase 2, Milestone 2.10 — Responsive & Accessibility Foundation. Do not
+begin Phase 3 until Phase 2 is complete and the user instructs you to continue.
 
 ---
 

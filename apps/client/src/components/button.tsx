@@ -37,7 +37,7 @@ const variantStyles: Record<ButtonVariant, string> = {
     "bg-transparent text-foreground shadow-[inset_0_0_0_1px_var(--border)] hover:bg-accent",
   ghost: "bg-transparent text-muted-foreground hover:bg-accent hover:text-foreground",
   destructive:
-    "bg-red-500/10 text-red-600 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-red-500)_30%,transparent)] dark:text-red-400 hover:bg-red-500/15",
+    "bg-destructive/10 text-destructive shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--destructive)_30%,transparent)] hover:bg-destructive/15",
   link: "bg-transparent text-primary underline-offset-4 hover:underline p-0 h-auto font-normal",
 };
 
