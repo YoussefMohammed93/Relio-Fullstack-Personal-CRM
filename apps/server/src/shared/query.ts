@@ -1,3 +1,5 @@
+import { ValidationError } from "../errors/AppError.js";
+
 type PaginationInput = {
   page?: number | string;
   limit?: number | string;
@@ -38,15 +40,30 @@ export function normalizeSortDirection(direction?: string | null): "asc" | "desc
 
 export function buildSortQuery<T extends string>(
   field: T,
+  allowedFields: readonly string[],
   direction?: string | null,
 ): Record<T, 1 | -1> {
+  if (!allowedFields.includes(field)) {
+    throw new ValidationError("Unsupported sort field");
+  }
+
   return {
     [field]: normalizeSortDirection(direction) === "desc" ? -1 : 1,
   } as Record<T, 1 | -1>;
 }
 
+type FilterOptions = {
+  allowedFields: readonly string[];
+  searchFields?: readonly string[];
+};
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function buildFilterQuery<T extends Record<string, unknown>>(
   filters: T,
+  options: FilterOptions,
 ): Record<string, unknown> {
   const query: Record<string, unknown> = {};
 
@@ -61,15 +78,25 @@ export function buildFilterQuery<T extends Record<string, unknown>>(
         continue;
       }
 
-      query.$or = [
-        { firstName: new RegExp(keyword, "i") },
-        { lastName: new RegExp(keyword, "i") },
-        { email: new RegExp(keyword, "i") },
-      ];
+      const escapedKeyword = escapeRegExp(keyword);
+      const searchConditions = (options.searchFields ?? []).map((field) => ({
+        [field]: new RegExp(escapedKeyword, "i"),
+      }));
+      if (searchConditions.length > 0) {
+        query.$or = searchConditions;
+      }
       continue;
     }
 
-    query[key] = value;
+    if (
+      options.allowedFields.includes(key) &&
+      (typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean" ||
+        value instanceof Date)
+    ) {
+      query[key] = value;
+    }
   }
 
   return query;

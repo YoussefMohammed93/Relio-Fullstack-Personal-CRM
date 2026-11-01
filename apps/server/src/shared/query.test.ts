@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { ValidationError } from "../errors/AppError.js";
 import {
   buildFilterQuery,
   buildSortQuery,
@@ -21,17 +22,40 @@ describe("shared query utilities", () => {
 
   it("builds filter queries from request values", () => {
     assert.deepEqual(
-      buildFilterQuery({ status: "active", search: "Alex", userId: "abc123" }),
+      buildFilterQuery(
+        {
+          status: "active",
+          search: "Alex.*",
+          userId: "abc123",
+          unexpected: { $ne: null },
+        },
+        {
+          allowedFields: ["status"],
+          searchFields: ["firstName", "lastName", "email"],
+        },
+      ),
       {
         status: "active",
-        userId: "abc123",
-        $or: [{ firstName: /Alex/i }, { lastName: /Alex/i }, { email: /Alex/i }],
+        $or: [
+          { firstName: /Alex\.\*/i },
+          { lastName: /Alex\.\*/i },
+          { email: /Alex\.\*/i },
+        ],
       },
     );
   });
 
   it("builds sort queries and normalizes direction", () => {
     assert.equal(normalizeSortDirection("desc"), "desc");
-    assert.deepEqual(buildSortQuery("createdAt", "desc"), { createdAt: -1 });
+    assert.deepEqual(buildSortQuery("createdAt", ["createdAt", "name"], "desc"), {
+      createdAt: -1,
+    });
+  });
+
+  it("rejects sort fields outside the endpoint allowlist", () => {
+    assert.throws(
+      () => buildSortQuery("password", ["createdAt", "name"], "desc"),
+      ValidationError,
+    );
   });
 });

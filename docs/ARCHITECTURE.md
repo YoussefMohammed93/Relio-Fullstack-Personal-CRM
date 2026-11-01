@@ -39,6 +39,12 @@ This section describes code that exists in the repository. Planned features and 
 - `@relio/shared` exports compiled TypeScript and currently contains only generic JSON types; it contains no speculative domain models.
 - Workspace lint, formatting check, typecheck, and production build pass. The server has a small suite using Node's built-in test runner; no frontend or end-to-end test framework is configured.
 
+### Database Models
+
+- Phase 4 Milestone 4.1 added the initial Mongoose schema layer under `apps/server/src/database/models/` for `User`, `Contact`, `Company`, `PipelineStage`, `Deal`, `Task`, `Activity`, `DealHistory`, and `Notification`.
+- The schema set enforces the PRD ownership model, timestamps, primary identity constraints, and core relationship references needed before authentication and CRM modules are implemented.
+- Domain relationships are intentionally modeled as owner-scoped references and optional historical/event records so user-owned data remains isolated and auditable as later phases build on the schema.
+
 ## 2. Target System Architecture (Planned)
 
 The following target design is guided by `docs/PRD.md` and `docs/ROADMAP.md`. It is not a claim that the listed product modules have been implemented.
@@ -197,6 +203,23 @@ Keep business logic inside services rather than route handlers or controllers.
 - Return consistent API response structures.
 - Apply authentication and ownership checks to protected resources.
 
+### List Query Contract
+
+- Each list endpoint defines a Zod query schema for its supported filters, search fields, sort fields, and pagination values; reject unknown query keys rather than forwarding arbitrary input to MongoDB.
+- Filtering accepts only endpoint-approved scalar values. Date or numeric ranges use named, validated query parameters that a service translates into MongoDB operators; clients never submit MongoDB operators or field paths.
+- Search is optional, case-insensitive literal text over explicitly configured fields. Escape user text before constructing regular expressions.
+- The authenticated owner ID is injected by server-side authorization/service logic and is never accepted from a filter parameter.
+- Use `page` and `limit`; the shared normalizer defaults to page 1 and limit 10, with a maximum limit of 100. Return pagination data through the shared `meta` envelope.
+- Each endpoint enumerates allowed `sortBy` fields and `asc`/`desc` directions in its query schema, and defines its own default sort. The shared sort builder rejects fields outside that allowlist.
+
+### Route, Controller, and Service Responsibilities
+
+- Routes compose authentication, request validation, and controller handlers; they do not contain business rules.
+- Controllers consume validated request data, pass authenticated identity and inputs to a service, and translate the result into the shared response envelope and HTTP status. Keep controllers free of database queries and business decisions.
+- Services enforce business rules and ownership, perform module data access and query construction, and return domain results without depending on Express request/response objects.
+- Keep validation schemas and models in their owning module. Do not add a repository layer unless a concrete module requires it; keep shared helpers limited to genuinely cross-module behavior.
+- Async controller failures flow to the centralized error handler. Do not catch and reshape errors independently in each controller.
+
 ## 7. Planned Authentication Strategy
 
 - JWT-based authentication.
@@ -299,5 +322,12 @@ Database models will be implemented in Phase 4.
 - **Reason:** The PRD allows user-uploaded company logos, and Cloudinary provides hosted image storage and secure delivery without storing image binaries in MongoDB.
 - **Alternatives considered:** Local disk storage is unsuitable for horizontally scaled or ephemeral application hosts; MongoDB binary storage is unnecessary for this image use case.
 - **Impact:** Uploads are constrained to JPEG, PNG, or WebP, capped at 5 MiB, and stored under a fixed folder with a 1200-pixel dimension limit. The route requires an authentication middleware parameter and is not mounted until Phase 5 supplies real authentication. Runtime credentials are read from `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in the server's ignored `.env`; no environment template is retained in the repository.
+
+### API Query and Module Boundaries
+
+- **Decision:** List endpoints use per-endpoint Zod allowlists for filters and sorting; routes compose middleware, controllers map validated HTTP input/output, and services own business rules, ownership enforcement, and data access.
+- **Reason:** Explicit boundaries prevent arbitrary client input from becoming database queries and keep transport concerns separate from CRM rules without adding speculative layers.
+- **Alternatives considered:** Passing request query objects directly to Mongoose or putting database/business logic in route handlers/controllers; both weaken validation and make module behavior harder to test.
+- **Impact:** The shared filter/sort builders require allowlists, and future CRM modules must define query schemas and controller/service responsibilities locally. No CRM module or controller/service implementation is claimed by this convention.
 
 Do not silently change established architectural decisions. When a real architectural decision changes, record the decision, reason, alternatives, and impact here.

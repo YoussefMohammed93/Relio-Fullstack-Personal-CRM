@@ -18,8 +18,8 @@
 | Project | Relio |
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
-| Current Phase | Phase 3 — Backend Infrastructure & API Foundation (In Progress) |
-| Next Milestone | Milestone 3.3 — API Standards follow-up (three unchecked conventions) |
+| Current Phase | Phase 4 — Database Architecture & Data Modeling (In Progress) |
+| Next Milestone | Phase 4 — Milestone 4.5 Pipeline Stage Model |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -40,8 +40,8 @@ A phase must not be marked Completed just because its main UI or initial impleme
 |---|---|---|
 | 1 | Monorepo Initialization & Project Foundation | Completed |
 | 2 | Frontend Foundation & Design System | Completed |
-| 3 | Backend Infrastructure & API Foundation | In Progress |
-| 4 | Database Architecture & Data Modeling | Not Started |
+| 3 | Backend Infrastructure & API Foundation | Completed |
+| 4 | Database Architecture & Data Modeling | In Progress |
 | 5 | Authentication & User Management | Not Started |
 | 6 | Core CRM Modules | Not Started |
 | 7 | Calendar & Notifications | Not Started |
@@ -656,16 +656,20 @@ No Architecture update was needed because no architectural decision changed. Pha
 - [x] Establish API status code conventions.
 - [x] Establish API versioning conventions.
 - [x] Establish pagination response conventions.
-- [ ] Establish filtering conventions.
-- [ ] Establish sorting conventions.
+- [x] Establish filtering conventions.
+- [x] Establish sorting conventions.
 - [x] Establish request validation conventions.
-- [ ] Establish controller/service responsibilities.
+- [x] Establish controller/service responsibilities.
 
 ### Milestone 3.3 API Standards Record
 
 - Added shared response helpers for API payload envelopes and pagination metadata to keep backend responses consistent across routes.
 - Added request validation middleware built on Zod so incoming body, query, and params payloads can be validated before controller logic runs.
 - Updated the health route and global error handler to use the shared success/error response contract.
+- Defined per-endpoint query schemas and allowlists for filters and sort fields, literal configured-field search, server-injected ownership filters, and module-owned defaults. Shared query builders now require filter/sort allowlists, omit unsupported or nested values, escape search text, and reject unsupported sort fields.
+- Documented that routes compose middleware, controllers map validated HTTP input/output, and services own business rules, ownership, query construction, and module data access. These are conventions for future CRM modules; no CRM module was created.
+- Validation: the server test suite passed (13 tests), `pnpm lint` passed with 0 errors and 12 existing client warnings, `pnpm typecheck` passed, `pnpm build` passed, and `pnpm format:check` passed.
+- Files changed: `apps/server/src/shared/query.ts`, `apps/server/src/shared/query.test.ts`, `docs/ARCHITECTURE.md`, and this record.
 
 ## Milestone 3.4 — Security & Middleware
 
@@ -739,7 +743,7 @@ No Architecture update was needed because no architectural decision changed. Pha
 - `pnpm build` — passed for all workspace packages.
 - Files changed: `apps/server/src/server.ts`, `apps/server/src/database/connect.ts`, seven backend files formatted by Prettier, and this progress record. `docs/ARCHITECTURE.md` records the verified startup behavior and decision.
 
-Phase 3 remains In Progress. Milestone 3.3 still has three unchecked items: filtering conventions, sorting conventions, and controller/service responsibilities. These remain the next work; no later phase is started.
+Milestone 3.3 is complete. Phase 3 is complete after secure rotation and validation of the previously exposed database/JWT credentials documented under Milestone 3.6. Phase 4 begins with Milestone 4.1 and the initial model design work.
 
 ### Phase 3 Acceptance Criteria
 
@@ -754,71 +758,98 @@ Phase 3 remains In Progress. Milestone 3.3 still has three unchecked items: filt
 
 # Phase 4 — Database Architecture & Data Modeling
 
-**Status:** Not Started
+**Status:** In Progress
 
 ## Milestone 4.1 — Data Model Design
 
-- [ ] Review PRD data requirements.
-- [ ] Define User model.
-- [ ] Define Contact model.
-- [ ] Define Company model.
-- [ ] Define PipelineStage model.
-- [ ] Define Deal model.
-- [ ] Define Task model.
-- [ ] Define Activity model.
-- [ ] Define DealHistory model.
-- [ ] Define Notification model.
-- [ ] Define relationships and references.
-- [ ] Define required and optional fields.
-- [ ] Define timestamps.
-- [ ] Define ownership rules.
-- [ ] Define deletion behavior.
-- [ ] Review model design against all PRD business rules.
+- [x] Review PRD data requirements.
+- [x] Define User model.
+- [x] Define Contact model.
+- [x] Define Company model.
+- [x] Define PipelineStage model.
+- [x] Define Deal model.
+- [x] Define Task model.
+- [x] Define Activity model.
+- [x] Define DealHistory model.
+- [x] Define Notification model.
+- [x] Define relationships and references.
+- [x] Define required and optional fields.
+- [x] Define timestamps.
+- [x] Define ownership rules.
+- [x] Define deletion behavior.
+- [x] Review model design against all PRD business rules.
+
+### Milestone 4.1 Implementation Record
+
+- Added Mongoose schemas for the primary Relio domain models under `apps/server/src/database/models/` and exported them via `apps/server/src/database/models/index.ts`.
+- Validated the model contract with `src/database/models.test.ts` before completion, including unique user identity constraints and owner references for user-owned records.
+- Model coverage includes `User`, `Contact`, `Company`, `PipelineStage`, `Deal`, `Task`, `Activity`, `DealHistory`, and `Notification` with the PRD-aligned relationships and timestamps needed for Phase 5 authentication and CRM work.
+- Verification: `pnpm --filter @relio/server exec node --import tsx --test src/shared/api.test.ts src/shared/query.test.ts src/shared/validation.test.ts src/database/models.test.ts` — 12/12 tests passed; `pnpm --filter @relio/server typecheck` — passed; `pnpm --filter @relio/server build` — passed.
 
 ## Milestone 4.2 — User Model
 
-- [ ] Define username.
-- [ ] Define email.
-- [ ] Define password storage.
-- [ ] Define Google account information where needed.
-- [ ] Define profile fields.
-- [ ] Define default avatar behavior.
-- [ ] Define timestamps.
-- [ ] Add required indexes.
-- [ ] Enforce email uniqueness.
+- [x] Define username.
+- [x] Define email.
+- [x] Define password storage.
+- [x] Define Google account information where needed.
+- [x] Define profile fields.
+- [x] Define default avatar behavior.
+- [x] Define timestamps.
+- [x] Add required indexes.
+- [x] Enforce email uniqueness.
+
+### Milestone 4.2 Implementation Record
+
+- Completed the `User` schema in `apps/server/src/database/models/user.ts` with the username/email identity rules, password hashing storage, profile fields, theme preference defaults, and OAuth-friendly Google account metadata that the PRD requires.
+- Added the contract verification in `apps/server/src/database/models.test.ts` to cover required profile defaults, password storage defaults, unique login identity, and ownerless identity behavior.
+- This milestone closes the User identity foundation needed before the Contact, Company, and Deal models are built in later Phase 4 steps.
+- Verification: `pnpm --filter @relio/server exec node --import tsx --test src/database/models.test.ts` — 3/3 tests passed.
 
 ## Milestone 4.3 — Contact Model
 
-- [ ] Define first name.
-- [ ] Define last name.
-- [ ] Define email.
-- [ ] Define phone.
-- [ ] Define optional Company reference.
-- [ ] Define Contact Type.
-- [ ] Define job title.
-- [ ] Define tags.
-- [ ] Define website.
-- [ ] Define notes.
-- [ ] Define owner reference.
-- [ ] Define timestamps.
-- [ ] Add appropriate indexes.
+- [x] Define first name.
+- [x] Define last name.
+- [x] Define email.
+- [x] Define phone.
+- [x] Define optional Company reference.
+- [x] Define Contact Type.
+- [x] Define job title.
+- [x] Define tags.
+- [x] Define website.
+- [x] Define notes.
+- [x] Define owner reference.
+- [x] Define timestamps.
+- [x] Add appropriate indexes.
+
+### Milestone 4.3 Implementation Record
+
+- Completed the `Contact` schema in `apps/server/src/database/models/contact.ts` to match the PRD: required first/last name, job title, company relationship, contact types (`lead`, `client`, `former_client`, `partner`), tags, notes, and owner-scoped uniqueness/indexing.
+- Added contract checks in `apps/server/src/database/models.test.ts` for the required fields, enum values, and owner/company relationships.
+- Verification: `pnpm --filter @relio/server exec node --import tsx --test src/database/models.test.ts` — 4/4 tests passed.
 
 ## Milestone 4.4 — Company Model
 
-- [ ] Define company name.
-- [ ] Define website.
-- [ ] Define industry.
-- [ ] Define email.
-- [ ] Define phone.
-- [ ] Define address.
-- [ ] Define description.
-- [ ] Define company size.
-- [ ] Define annual revenue.
-- [ ] Define LinkedIn URL.
-- [ ] Define logo.
-- [ ] Define owner reference.
-- [ ] Define timestamps.
-- [ ] Add appropriate indexes.
+- [x] Define company name.
+- [x] Define website.
+- [x] Define industry.
+- [x] Define email.
+- [x] Define phone.
+- [x] Define address.
+- [x] Define description.
+- [x] Define company size.
+- [x] Define annual revenue.
+- [x] Define LinkedIn URL.
+- [x] Define logo.
+- [x] Define owner reference.
+- [x] Define timestamps.
+- [x] Add appropriate indexes.
+
+### Milestone 4.4 Implementation Record
+
+- Completed the `Company` schema in `apps/server/src/database/models/company.ts` to match the PRD company object: required company name, owner reference, optional business details, embedded address block, logo URL, tags, and revenue metadata.
+- Kept the schema owner-scoped and unique per user by company name to support the PRD’s company/contact relationship rules.
+- Added the contract check in `apps/server/src/database/models.test.ts` for field presence, field types, and embedded address behavior.
+- Verification: `pnpm --filter @relio/server exec node --import tsx --test src/database/models.test.ts` — 5/5 tests passed.
 
 ## Milestone 4.5 — Pipeline Stage Model
 
