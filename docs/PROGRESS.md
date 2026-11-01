@@ -18,8 +18,8 @@
 | Project | Relio |
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
-| Current Phase | Phase 2 — Frontend Foundation & Design System |
-| Next Milestone | 2.11 — Phase Validation |
+| Current Phase | Phase 2 — Frontend Foundation & Design System (Completed) |
+| Next Milestone | Phase 3 — Backend Infrastructure & API Foundation (Awaiting instruction) |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -39,7 +39,7 @@ A phase must not be marked Completed just because its main UI or initial impleme
 | Phase | Name | Status |
 |---|---|---|
 | 1 | Monorepo Initialization & Project Foundation | Completed |
-| 2 | Frontend Foundation & Design System | In Progress |
+| 2 | Frontend Foundation & Design System | Completed |
 | 3 | Backend Infrastructure & API Foundation | Not Started |
 | 4 | Database Architecture & Data Modeling | Not Started |
 | 5 | Authentication & User Management | Not Started |
@@ -163,7 +163,7 @@ Validation results recorded for the completed foundation:
 
 # Phase 2 — Frontend Foundation & Design System
 
-**Status:** In Progress
+**Status:** Completed
 
 ## Milestone 2.1 — Existing Frontend Audit
 
@@ -523,7 +523,7 @@ Validation:
 - `pnpm format:check` — passed.
 - Browser verification at `/__components-preview` — rendered the component surface; selecting a different `PillSelect` option updated its value and the toast action displayed a dismissible notification. The requested 375px viewport was reported by the integrated browser as 469 CSS px (450px document client/scroll width); no horizontal document overflow was present at the measured width. Exact 320px/375px responsive checks remain in Milestone 2.10.
 
-Phase 2 remains In Progress. The next incomplete milestone is 2.11 — Phase Validation.
+Phase 2 remains In Progress. The next incomplete milestone is 2.10 — Responsive & Accessibility Foundation.
 
 ## Milestone 2.10 — Responsive & Accessibility Foundation
 
@@ -575,30 +575,46 @@ No Architecture or Roadmap update was needed. Phase 2 remains In Progress; the n
 
 ## Milestone 2.11 — Phase Validation
 
-- [ ] Run formatting.
-- [ ] Run ESLint.
-- [ ] Run TypeScript checks.
-- [ ] Run production build.
-- [ ] Fix all introduced errors.
-- [ ] Verify Light theme.
-- [ ] Verify Dark theme.
-- [ ] Verify System theme.
-- [ ] Verify responsive application shell.
-- [ ] Verify route navigation.
-- [ ] Update `PROGRESS.md`.
-- [ ] Update `ROADMAP.md`.
-- [ ] Update `ARCHITECTURE.md` if actual architectural decisions changed.
+- [x] Run formatting.
+- [x] Run ESLint.
+- [x] Run TypeScript checks.
+- [x] Run production build.
+- [x] Fix all introduced errors.
+- [x] Verify Light theme.
+- [x] Verify Dark theme.
+- [x] Verify System theme.
+- [x] Verify responsive application shell.
+- [x] Verify route navigation.
+- [x] Update `PROGRESS.md`.
+- [x] Update `ROADMAP.md`.
+- [x] Update `ARCHITECTURE.md` if actual architectural decisions changed.
 
 ### Phase 2 Acceptance Criteria
 
-- Hairline UI is integrated correctly.
-- The design system uses semantic tokens.
-- Light, Dark, and System themes work.
-- The application shell is responsive.
-- Routing architecture is established.
-- Reusable UI foundations are available.
-- No actual CRM business modules or authentication are implemented yet.
-- All required validation commands pass.
+- [x] Hairline UI is integrated correctly.
+- [x] The design system uses semantic tokens.
+- [x] Light, Dark, and System themes work.
+- [x] The application shell is responsive.
+- [x] Routing architecture is established.
+- [x] Reusable UI foundations are available.
+- [x] No actual CRM business modules or authentication are implemented yet.
+- [x] All required validation commands pass.
+
+### Phase 2 Validation Record
+
+Phase 2 is complete. All milestones 2.1–2.11 and phase acceptance criteria are verified. No CRM business modules or authentication were added.
+
+Validation:
+
+- `pnpm format:check` — passed.
+- `pnpm lint` — passed with 0 errors and 12 non-blocking warnings in existing components/providers.
+- `pnpm typecheck` — passed for shared, server, and client workspace packages.
+- `pnpm build` — passed for shared, client, and server packages.
+- Browser verification — Light and Dark preferences persisted across reloads. System preference selected correctly and loaded the dark palette with a dark OS preference. The browser bridge changed `matchMedia.matches` without emitting a media-query `change` event, so live OS switching could not be exercised in this browser session; the provider's listener remains in place.
+- Responsive shell at 320px, 375px, 768px, 1024px, and 1440px — no horizontal overflow; desktop and mobile navigation behaviors were verified.
+- Route smoke checks — `/`, `/auth/login`, `/app/contacts`, `/app/companies`, and an unknown route rendered their expected pages; active navigation and mobile route selection were verified.
+
+No Architecture update was needed because no architectural decision changed. Phase 3 remains Not Started and requires the user's instruction before work begins.
 
 ---
 
@@ -1969,8 +1985,8 @@ Do not update documents with fictional or unverified implementation status.
 
 # 4. Current Next Action
 
-**Next Phase:** Phase 2 — Frontend Foundation & Design System.
+**Next Phase:** Phase 3 — Backend Infrastructure & API Foundation (Not Started).
 
-**Next Milestone:** Milestone 2.11 — Phase Validation.
+**Next Milestone:** Await the user's instruction before beginning Phase 3.
 
-Continue with Milestone 2.11. Do not start Phase 3 or implement CRM business modules before Phase 2 is completed and reviewed.
+Phase 2 is complete. Do not start Phase 3 or implement CRM business modules until the user instructs you to continue.

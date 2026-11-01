@@ -2004,13 +2004,13 @@ These rules apply to every development phase and every AI coding agent working o
 
 # 29. Current Project Status
 
-**Current Phase: Phase 2 — Frontend Foundation & Design System**
+**Current Phase: Phase 2 — Frontend Foundation & Design System (Complete)**
 
 Phase 1 — Monorepo Initialization & Project Foundation is complete. Its
 implementation and validation record is maintained in `docs/PROGRESS.md`.
 
-The next milestone is Phase 2, Milestone 2.10 — Responsive & Accessibility Foundation. Do not
-begin Phase 3 until Phase 2 is complete and the user instructs you to continue.
+Phase 2 is complete. Phase 3 — Backend Infrastructure & API Foundation is next, but do not
+begin it until the user instructs you to continue.
 
 ---
 
