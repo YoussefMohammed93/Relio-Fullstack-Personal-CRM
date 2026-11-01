@@ -30,14 +30,14 @@ This section describes code that exists in the repository. Planned features and 
 - Express 5 and TypeScript run on port `5000`.
 - Implemented middleware includes CORS, JSON parsing, cookie parsing, 404 handling, and centralized error handling.
 - Zod validates environment variables. `GET /api/v1/health` returns the basic health response.
-- Server startup configures DNS resolvers, requires `MONGODB_URI`, and waits for Mongoose to connect before opening the HTTP listener. Missing database configuration or a failed connection aborts startup. SIGINT and SIGTERM disconnect Mongoose; the health endpoint reports the current database connection state.
+- The shared `connectDatabase()` helper configures DNS resolvers, requires `MONGODB_URI`, and waits for Mongoose to connect before API startup opens the HTTP listener. The development seed CLI uses the same connection path. Missing database configuration or a failed connection aborts startup. SIGINT and SIGTERM disconnect Mongoose; the health endpoint reports the current database connection state.
 - JWT secret access and secure HTTP-only cookie options are prepared; authentication is not implemented.
 - Cloudinary is the selected company-logo image store. The upload module validates JPEG, PNG, and WebP file signatures, enforces a 5 MiB in-memory upload limit, and uploads to a fixed `relio/company-logos` folder. Its route factory requires caller-supplied authentication middleware and remains unmounted until Phase 5 implements authentication.
 
 ### Shared Package and Validation
 
 - `@relio/shared` exports compiled TypeScript and currently contains only generic JSON types; it contains no speculative domain models.
-- Workspace lint, formatting check, typecheck, and production build pass. The server has a small suite using Node's built-in test runner; no frontend or end-to-end test framework is configured.
+- Workspace lint, typecheck, and production build pass. Workspace `format:check` currently reports pre-existing formatting differences in the Company, Contact, and User model files; changed server files pass a targeted Prettier check. The server has a small suite using Node's built-in test runner; no frontend or end-to-end test framework is configured.
 
 ### Database Models
 
@@ -48,7 +48,8 @@ This section describes code that exists in the repository. Planned features and 
 - Phase 4 Milestone 4.8 completed the Activity schema with Note, Call, Email, and Meeting types; optional content and CRM references; activity and optional scheduled dates; and owner-scoped timeline/scheduled-date indexes. Activities may be surfaced in related timelines without duplicating their underlying records; aggregation and deletion workflows remain unimplemented.
 - Phase 4 Milestone 4.9 completed `DealHistory` as a separate model referencing its owner and Deal, with the PRD event set (`created`, `stage_changed`, `value_changed`, `won`, `lost`, `reopened`), optional value/stage snapshots, event date, timestamps, and an owner/Deal/event-date index. The model has no Contact or Activity reference, keeping commercial history structurally independent from Contact Activities; relationship deletion behavior remains for the later integrity milestone.
 - Phase 4 Milestone 4.10 completed the Notification schema with the six PRD notification categories, required title/message, optional Contact/Company/Deal/Task reference pair, unread-by-default state, timestamps, and owner-scoped read/time and type indexes. Notification generation and delivery remain part of the later notifications phase.
-- Phase 4 Milestone 4.11 added `database/relationship-integrity.ts` as the transaction boundary for owner-scoped relationship checks and deletion policies. Contact deletion removes related Tasks/Activities and nulls retained Deal contacts; Company deletion unlinks Contacts/Deals without deleting historical Activities or DealHistory; stage deletion requires an owner-matched replacement when Deals reference the stage and reassigns both current and previous-stage fields. Future CRM write services must call `assertOwnedReferences` to reject cross-owner links. The policy tests use an injected store; live MongoDB transaction integration remains for Milestone 4.12.
+- Phase 4 Milestone 4.11 added `database/relationship-integrity.ts` as the transaction boundary for owner-scoped relationship checks and deletion policies. Contact deletion removes related Tasks/Activities and nulls retained Deal contacts; Company deletion unlinks Contacts/Deals without deleting historical Activities or DealHistory; stage deletion requires an owner-matched replacement when Deals reference the stage and reassigns both current and previous-stage fields. Future CRM write services must call `assertOwnedReferences` to reject cross-owner links. Policy tests use an injected store, and the opt-in Milestone 4.12 integration test verifies the Mongoose transaction adapter against MongoDB.
+- Phase 4 Milestone 4.12 adds a development-only `seed:dev` command that uses idempotent owner-scoped upserts for default stages and synthetic CRM records. It creates and verifies declared MongoDB indexes and validates seeded documents and their owner references. The command was run against the configured development database; its dedicated sample data is not production proof. The opt-in relationship integration test uses and removes unique temporary development fixtures.
 - Domain relationships are intentionally modeled as owner-scoped references and optional historical/event records so user-owned data remains isolated and auditable as later phases build on the schema.
 
 ## 2. Target System Architecture (Planned)
@@ -317,10 +318,10 @@ Database models will be implemented in Phase 4.
 
 ### Fail-Closed Database Startup
 
-- **Decision:** Require a MongoDB URI and a successful Mongoose connection before the API begins listening. Configure the DNS resolvers used by the server bootstrap before connecting.
+- **Decision:** Require a MongoDB URI and a successful Mongoose connection before the API begins listening. Configure the DNS resolvers in the shared database connection helper before connecting.
 - **Reason:** Phase 3 requires the API to avoid starting in an invalid database state; a disconnected API cannot safely serve database-backed operations.
-- **Alternatives considered:** Start the HTTP server in a degraded, database-disconnected mode; rejected because it can advertise a running API that cannot fulfill its backend contract.
-- **Impact:** Missing configuration or a connection failure prevents the listener from opening. The health endpoint reports database readiness while the server is available.
+- **Alternatives considered:** Start the HTTP server in a degraded, database-disconnected mode; rejected because it can advertise a running API that cannot fulfill its backend contract. Keeping DNS setup only in the API bootstrap was also insufficient because the seed CLI connects directly.
+- **Impact:** API startup and database CLIs use the same resolver and connection behavior. Missing configuration or a connection failure prevents the API listener from opening. The health endpoint reports database readiness while the server is available.
 
 ### Cloudinary Company Logo Storage
 

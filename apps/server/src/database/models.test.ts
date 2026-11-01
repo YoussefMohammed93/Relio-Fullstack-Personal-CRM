@@ -23,6 +23,7 @@ import {
   type IntegrityMutation,
   type RelationshipIntegrityStore,
 } from "./relationship-integrity.js";
+import { assertDevelopmentSeedEnvironment } from "./seed.js";
 
 describe("Relio database models", () => {
   it("exposes the required domain models", () => {
@@ -561,5 +562,12 @@ describe("Relio database models", () => {
       ["reassign_stage_deals", "reassign_previous_stage", "delete_pipeline_stage"],
     );
     assert.ok(mutations.every((mutation) => mutation.ownerId.equals(owner)));
+  });
+
+  it("only allows database seeding in development", () => {
+    assert.doesNotThrow(() => assertDevelopmentSeedEnvironment("development"));
+    assert.throws(() => assertDevelopmentSeedEnvironment("test"), /development/);
+    assert.throws(() => assertDevelopmentSeedEnvironment("production"), /development/);
+    assert.throws(() => assertDevelopmentSeedEnvironment(undefined), /development/);
   });
 });

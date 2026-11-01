@@ -1,7 +1,9 @@
+import dns from "node:dns";
 import mongoose from "mongoose";
 import { env } from "../config/env.js";
 
 export async function connectDatabase(uri = env.MONGODB_URI): Promise<void> {
+  dns.setServers(["1.1.1.1", "8.8.8.8"]);
   const mongoUri = uri?.trim();
 
   if (!mongoUri) {

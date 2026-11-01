@@ -18,8 +18,8 @@
 | Project | Relio |
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
-| Current Phase | Phase 4 — Database Architecture & Data Modeling (In Progress) |
-| Next Milestone | Phase 4 — Milestone 4.12 Database Seed & Validation |
+| Current Phase | Phase 5 — Authentication & User Management (Not Started) |
+| Next Milestone | Phase 5 — Milestone 5.1 Authentication Backend |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -41,7 +41,7 @@ A phase must not be marked Completed just because its main UI or initial impleme
 | 1 | Monorepo Initialization & Project Foundation | Completed |
 | 2 | Frontend Foundation & Design System | Completed |
 | 3 | Backend Infrastructure & API Foundation | Completed |
-| 4 | Database Architecture & Data Modeling | In Progress |
+| 4 | Database Architecture & Data Modeling | Completed |
 | 5 | Authentication & User Management | Not Started |
 | 6 | Core CRM Modules | Not Started |
 | 7 | Calendar & Notifications | Not Started |
@@ -1000,27 +1000,51 @@ Milestone 3.3 is complete. Phase 3 is complete after secure rotation and validat
 - Contact deletion removes its related Tasks and Activities, nulls retained Deals' `primaryContact`, and leaves DealHistory records untouched. Company deletion unlinks Contacts and Deals and deletes only the Company, leaving historical Activities and DealHistory records untouched.
 - Pipeline Stage deletion counts both current and previous-stage Deal references. A replacement owned by the same user is required when referenced; current and previous stage links are reassigned before the stage is deleted.
 - Extended model contract tests to verify owner requirements and the deletion/reassignment policy through an injected integrity store. Future CRM create/update services must use `assertOwnedReferences` when validating related records.
-- Verification: the server test suite (`api`, `query`, `validation`, upload, and model tests) — 25/25 passed; `pnpm --filter @relio/server typecheck` — passed; `pnpm --filter @relio/server lint` — passed; `pnpm --filter @relio/server build` — passed; Prettier check on the integrity service and model tests — passed. Live MongoDB transaction integration was not separately exercised; it remains in Milestone 4.12 validation.
+- Verification: the server test suite (`api`, `query`, `validation`, upload, and model tests) — 25/25 passed; `pnpm --filter @relio/server typecheck` — passed; `pnpm --filter @relio/server lint` — passed; `pnpm --filter @relio/server build` — passed; Prettier check on the integrity service and model tests — passed. Live MongoDB transaction behavior was subsequently exercised by the opt-in integration test recorded under Milestone 4.12.
 
 ## Milestone 4.12 — Database Seed & Validation
 
-- [ ] Create development seed infrastructure.
-- [ ] Create default Pipeline Stages.
-- [ ] Prepare realistic development data.
-- [ ] Avoid fake production testimonials or metrics.
-- [ ] Validate schemas.
-- [ ] Validate indexes.
-- [ ] Validate relationships.
-- [ ] Validate deletion behavior.
-- [ ] Update architecture documentation.
+**Status:** Completed
+
+- [x] Create development seed infrastructure.
+- [x] Create default Pipeline Stages.
+- [x] Prepare realistic development data.
+- [x] Avoid fake production testimonials or metrics.
+- [x] Validate schemas.
+- [x] Validate indexes against the configured development database.
+- [x] Validate relationships.
+- [x] Validate deletion behavior through integrity policy tests.
+- [x] Update architecture documentation.
+
+### Milestone 4.12 Implementation Record
+
+- Added `pnpm --filter @relio/server seed:dev`, backed by `apps/server/src/database/seed-cli.ts` and `apps/server/src/database/seed.ts`. The command refuses to run unless `NODE_ENV=development`, upserts a dedicated `.test` sample owner and linked CRM records without overwriting existing samples, and seeds the four `DEFAULT_PIPELINE_STAGES`.
+- Seed records cover a company, contact, open deal, follow-up, activity, DealHistory, and notification. They are internal development records only; no testimonials or product-performance metrics are seeded.
+- The seed workflow runs schema validation on its records, creates declared indexes, verifies database index keys/options, and checks owner-scoped references. Unit coverage includes the environment guard and integrity policy; an opt-in integration test exercises the Mongoose transaction adapter against MongoDB using unique temporary development fixtures and removes them after the test.
+- The shared `connectDatabase()` helper now configures the DNS resolvers used by both API startup and the seed CLI. The first seed attempt exposed that resolver setup had only been applied by `server.ts`; after moving it to the shared connection path, the seed and transaction integration checks connected successfully.
+- Validation: `pnpm --filter @relio/server seed:dev` — passed against the configured development database, creating and verifying declared indexes and persisting the dedicated sample records; `RELIO_DB_INTEGRATION=1 pnpm --filter @relio/server exec node --import tsx --test src/database/relationship-integrity.integration.test.ts` — 1/1 passed; full server test set — 26/26 passed; server typecheck, lint, and build — passed.
+- The development seed data is internal sample data only; no testimonials or product-performance metrics are seeded. The integration test uses a unique `.test` owner and removes its records in `finally`.
 
 ### Phase 4 Acceptance Criteria
 
-- All required models exist.
-- Relationships and ownership rules are enforced.
-- Deletion behavior follows the PRD.
-- Default development data can be seeded.
-- Database schemas and indexes are validated.
+- [x] All required models exist.
+- [x] Relationships and ownership rules are enforced.
+- [x] Deletion behavior follows the PRD.
+- [x] Default development data can be seeded.
+- [x] Database schemas and indexes are validated.
+
+### Phase 4 Validation Record
+
+Phase 4 is complete. All database models, ownership relationships, deletion policies, development seed behavior, and declared indexes have been validated. MongoDB transaction behavior was exercised against the configured development database with isolated temporary fixtures.
+
+Validation:
+
+- `pnpm --filter @relio/server seed:dev` — passed; indexes, seed records, and owner-scoped references validated against MongoDB.
+- Opt-in relationship integration test — 1/1 passed; temporary test data was cleaned up.
+- Server tests — 26/26 passed; server lint, typecheck, and build — passed.
+- Targeted Prettier check on changed server source — passed. Workspace `pnpm format:check` still reports pre-existing formatting differences in `models/company.ts`, `models/contact.ts`, and `models/user.ts`; those unrelated files were left unchanged.
+
+Phase 5 remains Not Started. Stop before Milestone 5.1 until instructed to continue.
 
 ---
 
