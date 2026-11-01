@@ -18,8 +18,8 @@
 | Project | Relio |
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
-| Current Phase | Phase 5 — Authentication & User Management (Not Started) |
-| Next Milestone | Phase 5 — Milestone 5.1 Authentication Backend |
+| Current Phase | Phase 5 — Authentication & User Management (In Progress) |
+| Next Milestone | Phase 5 — Milestone 5.2 Authorization & Ownership |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -42,7 +42,7 @@ A phase must not be marked Completed just because its main UI or initial impleme
 | 2 | Frontend Foundation & Design System | Completed |
 | 3 | Backend Infrastructure & API Foundation | Completed |
 | 4 | Database Architecture & Data Modeling | Completed |
-| 5 | Authentication & User Management | Not Started |
+| 5 | Authentication & User Management | In Progress |
 | 6 | Core CRM Modules | Not Started |
 | 7 | Calendar & Notifications | Not Started |
 | 8 | Dashboard, Global Search & Data Export | Not Started |
@@ -1044,46 +1044,61 @@ Validation:
 - Server tests — 26/26 passed; server lint, typecheck, and build — passed.
 - Targeted Prettier check on changed server source — passed. Workspace `pnpm format:check` still reports pre-existing formatting differences in `models/company.ts`, `models/contact.ts`, and `models/user.ts`; those unrelated files were left unchanged.
 
-Phase 5 remains Not Started. Stop before Milestone 5.1 until instructed to continue.
+Phase 5 began with Milestone 5.1 after the user's explicit instruction to proceed.
 
 ---
 
 # Phase 5 — Authentication & User Management
 
-**Status:** Not Started
+**Status:** In Progress
 
 ## Milestone 5.1 — Authentication Backend
 
-- [ ] Implement user registration.
-- [ ] Validate username.
-- [ ] Validate email.
-- [ ] Validate password.
-- [ ] Hash passwords securely.
-- [ ] Implement email/password login.
-- [ ] Implement Google OAuth.
-- [ ] Implement logout.
-- [ ] Generate JWT.
-- [ ] Store JWT in secure HTTP-only cookies.
-- [ ] Configure cookie expiration.
-- [ ] Configure SameSite behavior.
-- [ ] Configure Secure behavior for production.
-- [ ] Implement authentication middleware.
-- [ ] Implement protected API routes.
-- [ ] Implement current-user endpoint.
-- [ ] Implement session restoration.
-- [ ] Implement forgot-password request.
-- [ ] Implement password reset token.
-- [ ] Implement password reset endpoint.
-- [ ] Configure password reset email delivery.
-- [ ] Implement change-password endpoint.
-- [ ] Implement profile retrieval.
-- [ ] Implement profile update.
-- [ ] Prevent email changes.
-- [ ] Implement account deletion.
-- [ ] Persist user theme preference: Light, Dark, or System.
-- [ ] Persist notification preferences.
-- [ ] Persist the user's default currency, initially USD.
-- [ ] Do not add currency conversion or multi-currency support to the MVP.
+**Status:** Completed
+
+- [x] Implement user registration.
+- [x] Validate username.
+- [x] Validate email.
+- [x] Validate password.
+- [x] Hash passwords securely.
+- [x] Implement email/password login.
+- [x] Implement Google OAuth.
+- [x] Implement logout.
+- [x] Generate JWT.
+- [x] Store JWT in secure HTTP-only cookies.
+- [x] Configure cookie expiration.
+- [x] Configure SameSite behavior.
+- [x] Configure Secure behavior for production.
+- [x] Implement authentication middleware.
+- [x] Implement protected API routes.
+- [x] Implement current-user endpoint.
+- [x] Implement session restoration.
+- [x] Implement forgot-password request.
+- [x] Implement password reset token.
+- [x] Implement password reset endpoint.
+- [x] Configure password reset email delivery.
+- [x] Implement change-password endpoint.
+- [x] Implement profile retrieval.
+- [x] Implement profile update.
+- [x] Prevent email changes.
+- [x] Implement account deletion.
+- [x] Persist user theme preference: Light, Dark, or System.
+- [x] Persist notification preferences.
+- [x] Persist the user's default currency, initially USD.
+- [x] Do not add currency conversion or multi-currency support to the MVP.
+
+### Milestone 5.1 Implementation Record
+
+- Added authentication routes under `/api/v1/auth`: registration, email/password login, Google ID-token sign-in, logout, forgot password, and password reset. Protected user routes under `/api/v1/users` provide current-user/session restoration, profile update, password change, and account deletion. The company-logo upload route is now mounted under `/api/v1/uploads/company-logo` behind authentication.
+- Passwords use Node.js `scrypt` with per-password random salts and timing-safe verification. Reset tokens are random, stored only as SHA-256 hashes, expire after 30 minutes, and are consumed atomically. Password changes, resets, and logout increment the user's session version so existing JWTs are rejected.
+- Session JWTs are restricted to the HTTP-only `relio_session` cookie, have a configured expiry, use `SameSite=Lax`, and set `Secure` in production. Sensitive authentication routes have a dedicated rate limiter. No email verification is required.
+- Google ID tokens are verified server-side against `GOOGLE_CLIENT_ID`; verified email identities are linked to an existing account or create a new account. A partial unique index prevents one Google identity from being attached to multiple accounts while excluding legacy empty values.
+- SMTP reset delivery uses `SMTP_HOST`, optional `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM`. The reset response is generic to avoid account enumeration; delivery failures clear the token and are logged without user details. Google and SMTP settings are optional in local configuration, so those provider flows require credentials to operate.
+- Profile updates persist theme and notification preferences plus USD-only default currency; strict validation rejects email changes and other currencies. Account deletion transactionally removes the user's owned CRM records before deleting the account.
+- Validation: authentication and model tests — 19/19 passed; complete non-integration server test suite — 32/32 passed; server lint, typecheck, production build, and targeted Prettier check — passed.
+- Provider limitation: live Google verification and SMTP delivery were not exercised because external provider credentials are not configured. Forgot-password requests return 503 when SMTP is unconfigured. Account deletion's transaction path was typechecked and reviewed but not run against MongoDB here.
+
+Phase 5 remains In Progress. Stop before Milestone 5.2 until instructed to continue.
 
 ## Milestone 5.2 — Authorization & Ownership
 
@@ -2134,8 +2149,8 @@ Do not update documents with fictional or unverified implementation status.
 
 # 4. Current Next Action
 
-**Current Phase:** Phase 3 — Backend Infrastructure & API Foundation (In Progress).
+**Current Phase:** Phase 5 — Authentication & User Management (In Progress).
 
-**Next Milestone:** Milestone 3.7 — Backend Validation.
+**Next Milestone:** Milestone 5.2 — Authorization & Ownership.
 
-Milestones 3.1–3.6 are complete. Validate the backend foundation in Milestone 3.7, then stop before starting Phase 4 until the user instructs you to continue.
+Milestone 5.1 is complete. Stop before starting Milestone 5.2 until the user instructs you to continue.

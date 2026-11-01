@@ -31,8 +31,13 @@ This section describes code that exists in the repository. Planned features and 
 - Implemented middleware includes CORS, JSON parsing, cookie parsing, 404 handling, and centralized error handling.
 - Zod validates environment variables. `GET /api/v1/health` returns the basic health response.
 - The shared `connectDatabase()` helper configures DNS resolvers, requires `MONGODB_URI`, and waits for Mongoose to connect before API startup opens the HTTP listener. The development seed CLI uses the same connection path. Missing database configuration or a failed connection aborts startup. SIGINT and SIGTERM disconnect Mongoose; the health endpoint reports the current database connection state.
-- JWT secret access and secure HTTP-only cookie options are prepared; authentication is not implemented.
-- Cloudinary is the selected company-logo image store. The upload module validates JPEG, PNG, and WebP file signatures, enforces a 5 MiB in-memory upload limit, and uploads to a fixed `relio/company-logos` folder. Its route factory requires caller-supplied authentication middleware and remains unmounted until Phase 5 implements authentication.
+- Authentication is implemented in `modules/auth/`: registration, email/password login, Google ID-token sign-in, logout, forgot/reset password, password change, profile retrieval/update, current-session restoration, and account deletion. Passwords use salted Node.js `scrypt`; reset tokens are stored as SHA-256 hashes and expire after 30 minutes. Google ID tokens are verified against `GOOGLE_CLIENT_ID`; reset email uses SMTP settings (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM`).
+- Session JWTs are sent only in the HTTP-only `relio_session` cookie. The cookie uses `SameSite=Lax`, is `Secure` in production, and shares the configured JWT expiry. Tokens include a user session version; logout, password changes, and resets increment it to invalidate older tokens. Authentication endpoints have a dedicated rate limiter.
+- Server startup validates that `JWT_SECRET` is configured before connecting to MongoDB or opening the HTTP listener. Forgot-password requests return a service-unavailable response when SMTP is not configured rather than claiming mail delivery succeeded.
+- Protected user endpoints are mounted under `/api/v1/users`; `/api/v1/users/me` restores the current session and returns a public user projection. Profile updates do not accept email changes and only allow USD as the default currency. Account deletion removes owner-scoped CRM records and the user in a MongoDB transaction.
+- The company-logo upload route is mounted under `/api/v1/uploads/company-logo` and reuses the cookie authentication middleware before multipart parsing or storage.
+- Google and SMTP credentials are optional in local environment validation. Their respective routes require valid provider configuration to perform sign-in or deliver reset mail; external provider connectivity has not been verified.
+- Cloudinary is the selected company-logo image store. The upload module validates JPEG, PNG, and WebP file signatures, enforces a 5 MiB in-memory upload limit, and uploads to a fixed `relio/company-logos` folder. Its route is mounted at `/api/v1/uploads/company-logo` behind the Phase 5 authentication middleware.
 
 ### Shared Package and Validation
 
@@ -50,6 +55,7 @@ This section describes code that exists in the repository. Planned features and 
 - Phase 4 Milestone 4.10 completed the Notification schema with the six PRD notification categories, required title/message, optional Contact/Company/Deal/Task reference pair, unread-by-default state, timestamps, and owner-scoped read/time and type indexes. Notification generation and delivery remain part of the later notifications phase.
 - Phase 4 Milestone 4.11 added `database/relationship-integrity.ts` as the transaction boundary for owner-scoped relationship checks and deletion policies. Contact deletion removes related Tasks/Activities and nulls retained Deal contacts; Company deletion unlinks Contacts/Deals without deleting historical Activities or DealHistory; stage deletion requires an owner-matched replacement when Deals reference the stage and reassigns both current and previous-stage fields. Future CRM write services must call `assertOwnedReferences` to reject cross-owner links. Policy tests use an injected store, and the opt-in Milestone 4.12 integration test verifies the Mongoose transaction adapter against MongoDB.
 - Phase 4 Milestone 4.12 adds a development-only `seed:dev` command that uses idempotent owner-scoped upserts for default stages and synthetic CRM records. It creates and verifies declared MongoDB indexes and validates seeded documents and their owner references. The command was run against the configured development database; its dedicated sample data is not production proof. The opt-in relationship integration test uses and removes unique temporary development fixtures.
+- Phase 5 extends the User model with USD-only default currency, six persisted notification preferences, reset-token fields excluded from normal queries, and a session version. Google provider identity has a partial unique index that ignores empty legacy values. New password accounts receive a generated SVG initials avatar; public-user responses never include password hashes, reset tokens, or provider identifiers.
 - Domain relationships are intentionally modeled as owner-scoped references and optional historical/event records so user-owned data remains isolated and auditable as later phases build on the schema.
 
 ## 2. Target System Architecture (Planned)
@@ -227,6 +233,13 @@ Keep business logic inside services rather than route handlers or controllers.
 - Keep validation schemas and models in their owning module. Do not add a repository layer unless a concrete module requires it; keep shared helpers limited to genuinely cross-module behavior.
 - Async controller failures flow to the centralized error handler. Do not catch and reshape errors independently in each controller.
 
+### Authentication Sessions and Recovery
+
+- **Decision:** Use salted Node.js `scrypt` password hashes, Google ID-token verification, short-lived JWT cookie sessions with per-user session-version invalidation, and one-use hashed password-reset tokens delivered by SMTP.
+- **Reason:** This reuses the existing JWT, cookie, Zod, Mongoose, and API error infrastructure while keeping passwords and reset tokens out of recoverable plaintext storage. Session versioning allows logout and password changes to invalidate previously issued stateless JWTs.
+- **Alternatives considered:** Persisting raw reset tokens or accepting unverified Google profile data would weaken credential security. A server-side session store would add a new persistence dependency not required by the PRD. Password-reset delivery is configured through SMTP rather than an unconfigured third-party email SDK.
+- **Impact:** The browser receives only the HTTP-only `relio_session` cookie. Google sign-in requires `GOOGLE_CLIENT_ID`; reset delivery requires SMTP configuration. Profile updates exclude email changes and currency is restricted to USD. Account deletion relies on MongoDB transaction support.
+
 ## 7. Planned Authentication Strategy
 
 - JWT-based authentication.
@@ -328,7 +341,7 @@ Database models will be implemented in Phase 4.
 - **Decision:** Store uploaded company logos in Cloudinary, using the server SDK and server-only credentials.
 - **Reason:** The PRD allows user-uploaded company logos, and Cloudinary provides hosted image storage and secure delivery without storing image binaries in MongoDB.
 - **Alternatives considered:** Local disk storage is unsuitable for horizontally scaled or ephemeral application hosts; MongoDB binary storage is unnecessary for this image use case.
-- **Impact:** Uploads are constrained to JPEG, PNG, or WebP, capped at 5 MiB, and stored under a fixed folder with a 1200-pixel dimension limit. The route requires an authentication middleware parameter and is not mounted until Phase 5 supplies real authentication. Runtime credentials are read from `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in the server's ignored `.env`; no environment template is retained in the repository.
+- **Impact:** Uploads are constrained to JPEG, PNG, or WebP, capped at 5 MiB, and stored under a fixed folder with a 1200-pixel dimension limit. The mounted route uses the shared authentication middleware before multipart parsing. Runtime credentials are read from `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in the server's ignored `.env`; no environment template is retained in the repository.
 
 ### API Query and Module Boundaries
 

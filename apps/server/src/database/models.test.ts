@@ -64,12 +64,22 @@ describe("Relio database models", () => {
     const avatarDefault = User.schema.path("avatarUrl").options.default;
     const themeDefault = User.schema.path("themePreference").options.default;
     const passwordDefault = User.schema.path("passwordHash").options.default;
-    const googleIndex = User.schema.path("googleId").options.index;
+    const googleIndex = User.schema
+      .indexes()
+      .find(([fields, options]) => "googleId" in fields && options.unique === true);
 
     assert.equal(avatarDefault, "");
     assert.equal(themeDefault, "system");
     assert.equal(passwordDefault, "");
-    assert.equal(googleIndex, true);
+    assert.equal(User.schema.path("defaultCurrency").options.default, "USD");
+    assert.equal(
+      User.schema.path("notificationPreferences.taskReminders")?.options.default,
+      true,
+    );
+    assert.equal(User.schema.path("passwordResetTokenHash").options.select, false);
+    assert.equal(User.schema.path("passwordResetExpiresAt").options.select, false);
+    assert.equal(User.schema.path("sessionVersion").options.default, 0);
+    assert.ok(googleIndex);
     assert.equal(User.schema.path("isGoogleUser").options.default, false);
     assert.equal(User.schema.path("isActive").options.default, true);
     assert.equal(User.schema.path("lastLoginAt").options.default, null);
