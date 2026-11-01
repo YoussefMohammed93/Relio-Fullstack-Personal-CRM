@@ -6,7 +6,7 @@ Relio is a Personal CRM SaaS platform designed for freelancers to manage contact
 
 The application follows a Monorepo architecture using pnpm workspaces.
 
-## 1. Current Implementation (Verified 2026-10-31)
+## 1. Current Implementation (Verified 2026-11-01)
 
 This section describes code that exists in the repository. Planned features and target structure are described separately below and must not be treated as implemented.
 
@@ -30,14 +30,14 @@ This section describes code that exists in the repository. Planned features and 
 - Express 5 and TypeScript run on port `5000`.
 - Implemented middleware includes CORS, JSON parsing, cookie parsing, 404 handling, and centralized error handling.
 - Zod validates environment variables. `GET /api/v1/health` returns the basic health response.
-- A Mongoose connection helper exists but is not called during startup. JWT secret access and secure HTTP-only cookie options are prepared; authentication is not implemented.
+- Server startup configures DNS resolvers, requires `MONGODB_URI`, and waits for Mongoose to connect before opening the HTTP listener. Missing database configuration or a failed connection aborts startup. SIGINT and SIGTERM disconnect Mongoose; the health endpoint reports the current database connection state.
+- JWT secret access and secure HTTP-only cookie options are prepared; authentication is not implemented.
 - Cloudinary is the selected company-logo image store. The upload module validates JPEG, PNG, and WebP file signatures, enforces a 5 MiB in-memory upload limit, and uploads to a fixed `relio/company-logos` folder. Its route factory requires caller-supplied authentication middleware and remains unmounted until Phase 5 implements authentication.
 
 ### Shared Package and Validation
 
 - `@relio/shared` exports compiled TypeScript and currently contains only generic JSON types; it contains no speculative domain models.
-- The foundation has passed dependency installation, lint, formatting check, typecheck, and production build. The live client returned HTTP 200 and the health endpoint returned `{"status":"ok"}` during Phase 1 validation.
-- No automated test framework or test suite is configured yet.
+- Workspace lint, formatting check, typecheck, and production build pass. The server has a small suite using Node's built-in test runner; no frontend or end-to-end test framework is configured.
 
 ## 2. Target System Architecture (Planned)
 
@@ -286,12 +286,12 @@ Database models will be implemented in Phase 4.
 - **Alternatives considered:** Use the Google Fonts stylesheet with preconnect hints; self-hosting through Fontsource avoids an external font request at runtime and fits the existing package-based setup.
 - **Impact:** A single global import bundles the font with the client build. The root and Tailwind `font-sans` share the `Inter Tight Variable` family; the generic `font-mono` utility remains available only for technical content.
 
-### Deferred Database Startup
+### Fail-Closed Database Startup
 
-- **Decision:** Keep the MongoDB connection helper separate from server startup.
-- **Reason:** Phase 1 must not require Atlas credentials or a live database just to start the API.
-- **Alternatives considered:** Connect at process startup; deferred until Phase 3 database lifecycle work.
-- **Impact:** The health route can run without MongoDB; database readiness and production connection lifecycle remain incomplete.
+- **Decision:** Require a MongoDB URI and a successful Mongoose connection before the API begins listening. Configure the DNS resolvers used by the server bootstrap before connecting.
+- **Reason:** Phase 3 requires the API to avoid starting in an invalid database state; a disconnected API cannot safely serve database-backed operations.
+- **Alternatives considered:** Start the HTTP server in a degraded, database-disconnected mode; rejected because it can advertise a running API that cannot fulfill its backend contract.
+- **Impact:** Missing configuration or a connection failure prevents the listener from opening. The health endpoint reports database readiness while the server is available.
 
 ### Cloudinary Company Logo Storage
 

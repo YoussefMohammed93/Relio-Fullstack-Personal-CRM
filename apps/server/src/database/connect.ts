@@ -5,8 +5,7 @@ export async function connectDatabase(uri = env.MONGODB_URI): Promise<void> {
   const mongoUri = uri?.trim();
 
   if (!mongoUri) {
-    console.warn("MONGODB_URI is not configured; skipping MongoDB connection.");
-    return;
+    throw new Error("MONGODB_URI must be configured before starting the API");
   }
 
   mongoose.connection.on("connected", () => {

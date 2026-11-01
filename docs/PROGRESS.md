@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 3 — Backend Infrastructure & API Foundation (In Progress) |
-| Next Milestone | Milestone 3.7 — Backend Validation |
+| Next Milestone | Milestone 3.3 — API Standards follow-up (three unchecked conventions) |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -717,15 +717,29 @@ No Architecture update was needed because no architectural decision changed. Pha
 
 ## Milestone 3.7 — Backend Validation
 
-- [ ] Verify health endpoint.
-- [ ] Verify database connectivity.
-- [ ] Verify environment validation.
-- [ ] Verify error handling.
-- [ ] Verify security middleware.
-- [ ] Run lint.
-- [ ] Run typecheck.
-- [ ] Run production build.
-- [ ] Update project documentation.
+- [x] Verify health endpoint.
+- [x] Verify database connectivity.
+- [x] Verify environment validation.
+- [x] Verify error handling.
+- [x] Verify security middleware.
+- [x] Run lint.
+- [x] Run typecheck.
+- [x] Run production build.
+- [x] Update project documentation.
+
+### Milestone 3.7 Backend Validation Record
+
+- MongoDB Atlas connected successfully through the server's configured DNS resolvers. The server now requires a configured URI and waits for a successful database connection before opening its HTTP listener; missing or invalid connection configuration exits without listening.
+- HTTP smoke checks passed for the health response and database state, standardized 404 error envelope, production error-detail redaction, CORS origin, Helmet `X-Content-Type-Options`, request ID, and disabled `X-Powered-By` header.
+- Environment validation rejected `PORT=0` as expected.
+- `pnpm --filter @relio/server exec node --import tsx --test src/shared/api.test.ts src/shared/query.test.ts src/shared/validation.test.ts src/modules/uploads/company-logo.test.ts` — 12 tests passed.
+- `pnpm format:check` — passed.
+- `pnpm lint` — passed with 0 errors and 12 existing client warnings.
+- `pnpm typecheck` — passed for all workspace packages.
+- `pnpm build` — passed for all workspace packages.
+- Files changed: `apps/server/src/server.ts`, `apps/server/src/database/connect.ts`, seven backend files formatted by Prettier, and this progress record. `docs/ARCHITECTURE.md` records the verified startup behavior and decision.
+
+Phase 3 remains In Progress. Milestone 3.3 still has three unchecked items: filtering conventions, sorting conventions, and controller/service responsibilities. These remain the next work; no later phase is started.
 
 ### Phase 3 Acceptance Criteria
 

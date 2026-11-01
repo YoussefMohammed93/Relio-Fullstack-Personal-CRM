@@ -14,6 +14,7 @@ void (async () => {
   } catch (error) {
     console.error("Failed to connect to MongoDB:", error);
     process.exitCode = 1;
+    return;
   }
 
   app.listen(env.PORT, () => {
