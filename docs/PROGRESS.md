@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 4 — Database Architecture & Data Modeling (In Progress) |
-| Next Milestone | Phase 4 — Milestone 4.9 Deal History Model |
+| Next Milestone | Phase 4 — Milestone 4.11 Relationships & Data Integrity |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -943,26 +943,42 @@ Milestone 3.3 is complete. Phase 3 is complete after secure rotation and validat
 
 ## Milestone 4.9 — Deal History Model
 
-- [ ] Define Deal reference.
-- [ ] Define history event type.
-- [ ] Define previous value where applicable.
-- [ ] Define new value where applicable.
-- [ ] Define previous stage where applicable.
-- [ ] Define new stage where applicable.
-- [ ] Define event date.
-- [ ] Define owner reference.
-- [ ] Preserve history independently of Contact Activities.
+- [x] Define Deal reference.
+- [x] Define history event type.
+- [x] Define previous value where applicable.
+- [x] Define new value where applicable.
+- [x] Define previous stage where applicable.
+- [x] Define new stage where applicable.
+- [x] Define event date.
+- [x] Define owner reference.
+- [x] Preserve history independently of Contact Activities.
+
+### Milestone 4.9 Implementation Record
+
+- Completed `DealHistory` in `apps/server/src/database/models/deal-history.ts` with required owner and Deal references, event type, optional previous/new values and stages, event date, and timestamps.
+- Replaced ambiguous `status_changed`/`closed` values with the PRD event set: `created`, `stage_changed`, `value_changed`, `won`, `lost`, and `reopened`. Exported the event set and its TypeScript union for later history-writing services.
+- Deal history remains a separate model referencing the Deal directly, with no Contact or Activity reference. Added an owner/Deal/event-date index for scoped chronological history queries. Deletion behavior is validated in the later relationship-integrity milestone.
+- Added model contract tests for the exact event set, required references, snapshots, timestamps, index, and separation from Contact Activities in `apps/server/src/database/models.test.ts`.
+- Verification: `pnpm --filter @relio/server exec node --import tsx --test src/database/models.test.ts` — 10/10 tests passed; `pnpm --filter @relio/server typecheck` — passed; `pnpm --filter @relio/server lint` — passed; `pnpm --filter @relio/server build` — passed; Prettier check on the three changed server files — passed.
 
 ## Milestone 4.10 — Notification Model
 
-- [ ] Define notification type.
-- [ ] Define title.
-- [ ] Define message.
-- [ ] Define related entity.
-- [ ] Define read/unread state.
-- [ ] Define owner reference.
-- [ ] Define timestamps.
-- [ ] Add appropriate indexes.
+- [x] Define notification type.
+- [x] Define title.
+- [x] Define message.
+- [x] Define related entity.
+- [x] Define read/unread state.
+- [x] Define owner reference.
+- [x] Define timestamps.
+- [x] Add appropriate indexes.
+
+### Milestone 4.10 Implementation Record
+
+- Completed `Notification` in `apps/server/src/database/models/notification.ts` with the six PRD notification categories, required title/message and owner, optional Contact/Company/Deal/Task relation, read state, and timestamps.
+- Exported the notification type set and TypeScript union. The related entity type and ID must be supplied together; `User` is not a related entity because ownership is represented separately.
+- Added owner-scoped indexes for unread/recent notification queries and type-filtered queries. Notification generation and delivery remain in the later notifications phase.
+- Added model contract coverage for the exact PRD event set, required content, optional relation pairing, unread default, timestamps, and indexes in `apps/server/src/database/models.test.ts`.
+- Verification: `pnpm --filter @relio/server exec node --import tsx --test src/database/models.test.ts` — 11/11 tests passed; `pnpm --filter @relio/server typecheck` — passed; `pnpm --filter @relio/server lint` — passed; `pnpm --filter @relio/server build` — passed; Prettier check on the three changed server files — passed.
 
 ## Milestone 4.11 — Relationships & Data Integrity
 

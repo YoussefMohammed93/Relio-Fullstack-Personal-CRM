@@ -1,15 +1,20 @@
 import mongoose, { Schema, type Model } from "mongoose";
 
+export const DEAL_HISTORY_EVENT_TYPES = [
+  "created",
+  "stage_changed",
+  "value_changed",
+  "won",
+  "lost",
+  "reopened",
+] as const;
+
+export type DealHistoryEventType = (typeof DEAL_HISTORY_EVENT_TYPES)[number];
+
 export interface IDealHistory {
   owner: mongoose.Types.ObjectId;
   deal: mongoose.Types.ObjectId;
-  eventType:
-    | "created"
-    | "stage_changed"
-    | "value_changed"
-    | "status_changed"
-    | "reopened"
-    | "closed";
+  eventType: DealHistoryEventType;
   previousValue?: number | null;
   newValue?: number | null;
   previousStage?: mongoose.Types.ObjectId | null;
@@ -25,24 +30,15 @@ const dealHistorySchema = new Schema<IDealHistory>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
     deal: {
       type: Schema.Types.ObjectId,
       ref: "Deal",
       required: true,
-      index: true,
     },
     eventType: {
       type: String,
-      enum: [
-        "created",
-        "stage_changed",
-        "value_changed",
-        "status_changed",
-        "reopened",
-        "closed",
-      ],
+      enum: DEAL_HISTORY_EVENT_TYPES,
       required: true,
     },
     previousValue: {
@@ -74,7 +70,7 @@ const dealHistorySchema = new Schema<IDealHistory>(
   { timestamps: true },
 );
 
-dealHistorySchema.index({ deal: 1, eventDate: -1 });
+dealHistorySchema.index({ owner: 1, deal: 1, eventDate: -1 });
 
 export const DealHistory: Model<IDealHistory> = mongoose.model<IDealHistory>(
   "DealHistory",

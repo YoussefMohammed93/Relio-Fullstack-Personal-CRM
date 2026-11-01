@@ -7,9 +7,11 @@ import {
   Company,
   Contact,
   DEFAULT_PIPELINE_STAGES,
+  DEAL_HISTORY_EVENT_TYPES,
   DEAL_LOST_REASONS,
   Deal,
   DealHistory,
+  NOTIFICATION_TYPES,
   Notification,
   PipelineStage,
   Task,
@@ -310,5 +312,160 @@ describe("Relio database models", () => {
     await assert.doesNotReject(scheduledMeeting.validate());
     await assert.rejects(activityWithoutTitle.validate(), /title/);
     await assert.rejects(invalidActivityType.validate(), /type/);
+  });
+
+  it("defines DealHistory events and preserves history independently", async () => {
+    const eventTypePath = DealHistory.schema.path("eventType") as unknown as {
+      enumValues: string[];
+    };
+    const owner = new mongoose.Types.ObjectId();
+    const deal = new mongoose.Types.ObjectId();
+    const previousStage = new mongoose.Types.ObjectId();
+    const newStage = new mongoose.Types.ObjectId();
+    const historyFields = { owner, deal, eventType: "stage_changed" };
+
+    assert.deepEqual(DEAL_HISTORY_EVENT_TYPES, [
+      "created",
+      "stage_changed",
+      "value_changed",
+      "won",
+      "lost",
+      "reopened",
+    ]);
+    assert.deepEqual(eventTypePath.enumValues, DEAL_HISTORY_EVENT_TYPES);
+    assert.equal(DealHistory.schema.path("owner").options.ref, "User");
+    assert.equal(DealHistory.schema.path("deal").options.ref, "Deal");
+    assert.equal(DealHistory.schema.path("deal").options.required, true);
+    assert.equal(DealHistory.schema.path("previousStage").options.ref, "PipelineStage");
+    assert.equal(DealHistory.schema.path("newStage").options.ref, "PipelineStage");
+    assert.equal(DealHistory.schema.path("previousValue").options.default, null);
+    assert.equal(DealHistory.schema.path("newValue").options.default, null);
+    assert.equal(DealHistory.schema.path("eventDate").options.required, true);
+    assert.equal(
+      typeof DealHistory.schema.path("eventDate").options.default,
+      "function",
+    );
+    assert.equal(DealHistory.schema.path("contact"), undefined);
+    assert.equal(DealHistory.schema.path("activity"), undefined);
+    assert.equal(DealHistory.schema.options.timestamps, true);
+    assert.ok(
+      DealHistory.schema
+        .indexes()
+        .some(
+          ([fields]) =>
+            fields.owner === 1 && fields.deal === 1 && fields.eventDate === -1,
+        ),
+    );
+
+    const stageHistory = new DealHistory({
+      ...historyFields,
+      previousStage,
+      newStage,
+    });
+    const valueHistory = new DealHistory({
+      ...historyFields,
+      eventType: "value_changed",
+      previousValue: 1000,
+      newValue: 1500,
+    });
+    const historyWithoutDeal = new DealHistory({ owner, eventType: "created" });
+    const invalidEvent = new DealHistory({ ...historyFields, eventType: "closed" });
+
+    await assert.doesNotReject(stageHistory.validate());
+    await assert.doesNotReject(valueHistory.validate());
+    await assert.rejects(historyWithoutDeal.validate(), /deal/);
+    await assert.rejects(invalidEvent.validate(), /eventType/);
+  });
+
+  it("defines Notification types and validates ownership, related entities, and read state", async () => {
+    const notificationTypePath = Notification.schema.path("type") as unknown as {
+      enumValues: string[];
+    };
+    const relatedEntityTypePath = Notification.schema.path(
+      "relatedEntityType",
+    ) as unknown as { enumValues: string[] };
+    const owner = new mongoose.Types.ObjectId();
+    const notificationFields = {
+      owner,
+      type: "overdue_task",
+      title: "Task overdue",
+      message: "Prepare proposal",
+    };
+
+    assert.deepEqual(NOTIFICATION_TYPES, [
+      "upcoming_task_reminder",
+      "overdue_task",
+      "upcoming_follow_up",
+      "deal_won",
+      "deal_lost",
+      "approaching_deal_closing_date",
+    ]);
+    assert.deepEqual(notificationTypePath.enumValues, NOTIFICATION_TYPES);
+    assert.equal(Notification.schema.path("owner").options.ref, "User");
+    assert.equal(Notification.schema.path("title").options.required, true);
+    assert.equal(Notification.schema.path("message").options.required, true);
+    assert.equal(
+      Notification.schema.path("relatedEntityId").options.refPath,
+      "relatedEntityType",
+    );
+    assert.equal(Notification.schema.path("isRead").options.default, false);
+    assert.equal(Notification.schema.path("relatedEntityType").options.default, null);
+    assert.deepEqual(relatedEntityTypePath.enumValues, [
+      "Contact",
+      "Company",
+      "Deal",
+      "Task",
+    ]);
+    assert.equal(Notification.schema.options.timestamps, true);
+    assert.ok(
+      Notification.schema
+        .indexes()
+        .some(
+          ([fields]) =>
+            fields.owner === 1 && fields.isRead === 1 && fields.createdAt === -1,
+        ),
+    );
+    assert.ok(
+      Notification.schema
+        .indexes()
+        .some(([fields]) => fields.owner === 1 && fields.type === 1),
+    );
+
+    const notification = new Notification(notificationFields);
+    const taskNotification = new Notification({
+      ...notificationFields,
+      relatedEntityType: "Task",
+      relatedEntityId: new mongoose.Types.ObjectId(),
+    });
+    const notificationWithoutTitle = new Notification({
+      ...notificationFields,
+      title: "",
+    });
+    const notificationWithoutMessage = new Notification({
+      ...notificationFields,
+      message: "",
+    });
+    const notificationWithOnlyType = new Notification({
+      ...notificationFields,
+      relatedEntityType: "Task",
+    });
+    const notificationWithOnlyId = new Notification({
+      ...notificationFields,
+      relatedEntityId: new mongoose.Types.ObjectId(),
+    });
+    const notificationRelatedToUser = new Notification({
+      ...notificationFields,
+      relatedEntityType: "User",
+      relatedEntityId: new mongoose.Types.ObjectId(),
+    });
+
+    await notification.validate();
+    assert.equal(notification.isRead, false);
+    await assert.doesNotReject(taskNotification.validate());
+    await assert.rejects(notificationWithoutTitle.validate(), /title/);
+    await assert.rejects(notificationWithoutMessage.validate(), /message/);
+    await assert.rejects(notificationWithOnlyType.validate(), /relatedEntityId/);
+    await assert.rejects(notificationWithOnlyId.validate(), /relatedEntityId/);
+    await assert.rejects(notificationRelatedToUser.validate(), /relatedEntityType/);
   });
 });
