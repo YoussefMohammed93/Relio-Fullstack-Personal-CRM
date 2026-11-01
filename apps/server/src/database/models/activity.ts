@@ -4,7 +4,7 @@ export interface IActivity {
   owner: mongoose.Types.ObjectId;
   type: "note" | "call" | "email" | "meeting";
   title: string;
-  content: string;
+  content?: string;
   contact?: mongoose.Types.ObjectId | null;
   company?: mongoose.Types.ObjectId | null;
   deal?: mongoose.Types.ObjectId | null;
@@ -34,7 +34,6 @@ const activitySchema = new Schema<IActivity>(
     },
     content: {
       type: String,
-      required: true,
       default: "",
     },
     contact: {
@@ -66,7 +65,10 @@ const activitySchema = new Schema<IActivity>(
 );
 
 activitySchema.index({ owner: 1, activityDate: -1 });
-activitySchema.index({ owner: 1, contact: 1 });
+activitySchema.index({ owner: 1, contact: 1, activityDate: -1 });
+activitySchema.index({ owner: 1, company: 1, activityDate: -1 });
+activitySchema.index({ owner: 1, deal: 1, activityDate: -1 });
+activitySchema.index({ owner: 1, scheduledAt: 1 });
 
 export const Activity: Model<IActivity> = mongoose.model<IActivity>(
   "Activity",

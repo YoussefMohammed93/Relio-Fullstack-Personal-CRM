@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 4 — Database Architecture & Data Modeling (In Progress) |
-| Next Milestone | Phase 4 — Milestone 4.7 Task Model |
+| Next Milestone | Phase 4 — Milestone 4.9 Deal History Model |
 | Last Updated | 2026-11-01 |
 
 ### Status Definitions
@@ -898,34 +898,48 @@ Milestone 3.3 is complete. Phase 3 is complete after secure rotation and validat
 
 ## Milestone 4.7 — Task Model
 
-- [ ] Define title.
-- [ ] Define description.
-- [ ] Define task type.
-- [ ] Define status.
-- [ ] Define priority.
-- [ ] Define optional due date.
-- [ ] Define optional due time.
-- [ ] Define optional related entity.
-- [ ] Ensure a task relates to no more than one entity.
-- [ ] Define reminder settings.
-- [ ] Define completion timestamp.
-- [ ] Define owner reference.
-- [ ] Define timestamps.
-- [ ] Add appropriate indexes.
+- [x] Define title.
+- [x] Define description.
+- [x] Define task type.
+- [x] Define status.
+- [x] Define priority.
+- [x] Define optional due date.
+- [x] Define optional due time.
+- [x] Define optional related entity.
+- [x] Ensure a task relates to no more than one entity.
+- [x] Define reminder settings.
+- [x] Define completion timestamp.
+- [x] Define owner reference.
+- [x] Define timestamps.
+- [x] Add appropriate indexes.
+
+### Milestone 4.7 Implementation Record
+
+- Completed `Task` in `apps/server/src/database/models/task.ts` with owner, title, description, Regular Task/Follow-up type, PRD status and priority enums, optional due date/time, a single optional Contact/Company/Deal relationship, reminder time, completion timestamp, timestamps, and owner-scoped due-date/status indexes.
+- Validation requires the related entity type and ID to be set together. The reminder time is derived as one day before the due date and cleared when no due date exists. Completion sets `completedAt`; other statuses clear it.
+- Added model contract coverage for field defaults/enums, relationship pairing, reminder scheduling, completion timestamps, and indexes in `apps/server/src/database/models.test.ts`. Notification delivery and task API workflows are not implemented in this database milestone.
+- Verification: `pnpm --filter @relio/server exec node --import tsx --test src/database/models.test.ts` — 8/8 tests passed; `pnpm --filter @relio/server typecheck` — passed; `pnpm --filter @relio/server lint` — passed; `pnpm --filter @relio/server build` — passed; Prettier check on the two changed server files — passed.
 
 ## Milestone 4.8 — Activity Model
 
-- [ ] Define activity type: Note, Call, Email, Meeting.
-- [ ] Define title.
-- [ ] Define description/content.
-- [ ] Define related Contact.
-- [ ] Define related Deal.
-- [ ] Define related Company.
-- [ ] Define activity date.
-- [ ] Define scheduled date/time where applicable.
-- [ ] Define owner reference.
-- [ ] Define timestamps.
-- [ ] Add appropriate indexes.
+- [x] Define activity type: Note, Call, Email, Meeting.
+- [x] Define title.
+- [x] Define description/content.
+- [x] Define related Contact.
+- [x] Define related Deal.
+- [x] Define related Company.
+- [x] Define activity date.
+- [x] Define scheduled date/time where applicable.
+- [x] Define owner reference.
+- [x] Define timestamps.
+- [x] Add appropriate indexes.
+
+### Milestone 4.8 Implementation Record
+
+- Completed `Activity` in `apps/server/src/database/models/activity.ts` with the PRD activity types, required title and activity date, optional content, optional Contact/Company/Deal references, optional scheduled date/time, owner reference, and timestamps.
+- Added owner-scoped compound indexes for Contact, Company, and Deal timelines ordered by activity date, plus an owner/scheduled-date index for scheduled activity queries.
+- Added model contract coverage for activity types, required and optional fields, references, timestamps, indexes, and scheduled Call/Meeting records in `apps/server/src/database/models.test.ts`.
+- Verification: `pnpm --filter @relio/server exec node --import tsx --test src/database/models.test.ts` — 9/9 tests passed; `pnpm --filter @relio/server typecheck` — passed; `pnpm --filter @relio/server lint` — passed; `pnpm --filter @relio/server build` — passed; Prettier check on the two changed server files — passed.
 
 ## Milestone 4.9 — Deal History Model
 

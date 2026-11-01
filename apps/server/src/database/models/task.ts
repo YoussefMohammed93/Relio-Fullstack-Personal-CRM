@@ -4,12 +4,12 @@ export interface ITask {
   owner: mongoose.Types.ObjectId;
   title: string;
   description?: string;
-  type: "follow_up" | "call" | "email" | "meeting" | "admin";
-  status: "todo" | "in_progress" | "done" | "cancelled";
+  type: "task" | "follow_up";
+  status: "todo" | "in_progress" | "completed" | "cancelled";
   priority: "low" | "medium" | "high";
   dueDate?: Date | null;
   dueTime?: string;
-  relatedEntityType?: "Contact" | "Company" | "Deal" | "User" | null;
+  relatedEntityType?: "Contact" | "Company" | "Deal" | null;
   relatedEntityId?: mongoose.Types.ObjectId | null;
   reminderAt?: Date | null;
   completedAt?: Date | null;
@@ -36,12 +36,12 @@ const taskSchema = new Schema<ITask>(
     },
     type: {
       type: String,
-      enum: ["follow_up", "call", "email", "meeting", "admin"],
-      default: "follow_up",
+      enum: ["task", "follow_up"],
+      default: "task",
     },
     status: {
       type: String,
-      enum: ["todo", "in_progress", "done", "cancelled"],
+      enum: ["todo", "in_progress", "completed", "cancelled"],
       default: "todo",
     },
     priority: {
@@ -60,7 +60,7 @@ const taskSchema = new Schema<ITask>(
     },
     relatedEntityType: {
       type: String,
-      enum: ["Contact", "Company", "Deal", "User"],
+      enum: ["Contact", "Company", "Deal"],
       default: null,
     },
     relatedEntityId: {
@@ -79,6 +79,24 @@ const taskSchema = new Schema<ITask>(
   },
   { timestamps: true },
 );
+
+taskSchema.pre("validate", function () {
+  const hasRelatedEntityType = this.relatedEntityType != null;
+  const hasRelatedEntityId = this.relatedEntityId != null;
+
+  if (hasRelatedEntityType !== hasRelatedEntityId) {
+    this.invalidate(
+      "relatedEntityId",
+      "Related entity type and ID must be set together",
+    );
+  }
+
+  this.reminderAt = this.dueDate
+    ? new Date(this.dueDate.getTime() - 24 * 60 * 60 * 1000)
+    : null;
+  this.completedAt =
+    this.status === "completed" ? (this.completedAt ?? new Date()) : null;
+});
 
 taskSchema.index({ owner: 1, dueDate: 1 });
 taskSchema.index({ owner: 1, status: 1 });

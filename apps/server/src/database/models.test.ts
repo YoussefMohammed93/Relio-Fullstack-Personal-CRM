@@ -186,4 +186,129 @@ describe("Relio database models", () => {
     await assert.rejects(missingContactDeal.validate(), /primaryContact/);
     await assert.doesNotReject(deletedContactDeal.validate());
   });
+
+  it("defines Task fields and validates PRD relationship and reminder rules", async () => {
+    const taskTypePath = Task.schema.path("type") as unknown as {
+      enumValues: string[];
+    };
+    const taskStatusPath = Task.schema.path("status") as unknown as {
+      enumValues: string[];
+    };
+    const relatedEntityTypePath = Task.schema.path("relatedEntityType") as unknown as {
+      enumValues: string[];
+    };
+    const owner = new mongoose.Types.ObjectId();
+    const taskFields = { owner, title: "Prepare proposal" };
+    const dueDate = new Date("2026-11-15T12:00:00.000Z");
+
+    assert.equal(Task.schema.path("owner").options.ref, "User");
+    assert.equal(Task.schema.path("title").options.required, true);
+    assert.equal(Task.schema.path("description").options.default, "");
+    assert.equal(Task.schema.path("type").options.default, "task");
+    assert.equal(Task.schema.path("status").options.default, "todo");
+    assert.equal(Task.schema.path("priority").options.default, "medium");
+    assert.equal(Task.schema.path("dueDate").options.default, null);
+    assert.equal(Task.schema.path("dueTime").instance, "String");
+    assert.equal(
+      Task.schema.path("relatedEntityId").options.refPath,
+      "relatedEntityType",
+    );
+    assert.equal(Task.schema.path("reminderAt").options.default, null);
+    assert.equal(Task.schema.path("completedAt").options.default, null);
+    assert.deepEqual(taskTypePath.enumValues, ["task", "follow_up"]);
+    assert.deepEqual(taskStatusPath.enumValues, [
+      "todo",
+      "in_progress",
+      "completed",
+      "cancelled",
+    ]);
+    assert.deepEqual(relatedEntityTypePath.enumValues, ["Contact", "Company", "Deal"]);
+    assert.equal(Task.schema.options.timestamps, true);
+    assert.ok(
+      Task.schema
+        .indexes()
+        .some(([fields]) => fields.owner === 1 && fields.dueDate === 1),
+    );
+
+    const scheduledTask = new Task({ ...taskFields, dueDate });
+    const unscheduledTask = new Task(taskFields);
+    const completedTask = new Task({ ...taskFields, status: "completed" });
+    const taskWithRelatedEntity = new Task({
+      ...taskFields,
+      relatedEntityType: "Contact",
+      relatedEntityId: new mongoose.Types.ObjectId(),
+    });
+    const taskWithOnlyType = new Task({
+      ...taskFields,
+      relatedEntityType: "Contact",
+    });
+    const taskWithOnlyId = new Task({
+      ...taskFields,
+      relatedEntityId: new mongoose.Types.ObjectId(),
+    });
+
+    await scheduledTask.validate();
+    assert.equal(scheduledTask.reminderAt?.toISOString(), "2026-11-14T12:00:00.000Z");
+    await unscheduledTask.validate();
+    assert.equal(unscheduledTask.reminderAt, null);
+    await completedTask.validate();
+    assert.ok(completedTask.completedAt instanceof Date);
+    await assert.doesNotReject(taskWithRelatedEntity.validate());
+    await assert.rejects(taskWithOnlyType.validate(), /relatedEntityId/);
+    await assert.rejects(taskWithOnlyId.validate(), /relatedEntityId/);
+  });
+
+  it("defines Activity fields and owner-scoped timeline indexes", async () => {
+    const activityTypePath = Activity.schema.path("type") as unknown as {
+      enumValues: string[];
+    };
+    const owner = new mongoose.Types.ObjectId();
+    const activityFields = { owner, type: "note", title: "Project update" };
+    const scheduledAt = new Date("2026-11-15T12:00:00.000Z");
+    const hasOwnerEntityTimelineIndex = (entity: "contact" | "company" | "deal") =>
+      Activity.schema
+        .indexes()
+        .some(
+          ([fields]) =>
+            fields.owner === 1 && fields[entity] === 1 && fields.activityDate === -1,
+        );
+
+    assert.deepEqual(activityTypePath.enumValues, ["note", "call", "email", "meeting"]);
+    assert.equal(Activity.schema.path("owner").options.ref, "User");
+    assert.equal(Activity.schema.path("title").options.required, true);
+    assert.equal(Activity.schema.path("content").options.required, undefined);
+    assert.equal(Activity.schema.path("content").options.default, "");
+    assert.equal(Activity.schema.path("contact").options.ref, "Contact");
+    assert.equal(Activity.schema.path("company").options.ref, "Company");
+    assert.equal(Activity.schema.path("deal").options.ref, "Deal");
+    assert.equal(Activity.schema.path("activityDate").options.required, true);
+    assert.equal(Activity.schema.path("scheduledAt").options.default, null);
+    assert.equal(Activity.schema.options.timestamps, true);
+    assert.ok(hasOwnerEntityTimelineIndex("contact"));
+    assert.ok(hasOwnerEntityTimelineIndex("company"));
+    assert.ok(hasOwnerEntityTimelineIndex("deal"));
+    assert.ok(
+      Activity.schema
+        .indexes()
+        .some(([fields]) => fields.owner === 1 && fields.scheduledAt === 1),
+    );
+
+    const note = new Activity(activityFields);
+    const scheduledMeeting = new Activity({
+      ...activityFields,
+      type: "meeting",
+      scheduledAt,
+    });
+    const activityWithoutTitle = new Activity({ owner, type: "note" });
+    const invalidActivityType = new Activity({
+      ...activityFields,
+      type: "task",
+    });
+
+    await note.validate();
+    assert.equal(note.content, "");
+    await assert.doesNotReject(scheduledMeeting.validate());
+    await assert.rejects(activityWithoutTitle.validate(), /title/);
+    await assert.rejects(invalidActivityType.validate(), /type/);
+  });
 });
