@@ -3,7 +3,9 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   type PropsWithChildren,
 } from "react";
@@ -25,35 +27,59 @@ interface NotificationContextValue {
 }
 
 const NotificationContext = createContext<NotificationContextValue | null>(null);
+const NOTIFICATION_DURATION_MS = 4000;
 
 export function NotificationProvider({ children }: PropsWithChildren) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  const notify = useCallback((notification: Omit<Notification, "id">) => {
-    const id = `toast-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
-    setNotifications((current) => [
-      ...current,
-      {
-        id,
-        title: notification.title,
-        description: notification.description,
-        variant: notification.variant ?? "default",
-      },
-    ]);
-
-    return id;
-  }, []);
+  const timers = useRef(new Map<string, number>());
 
   const dismiss = useCallback((id: string) => {
+    const timer = timers.current.get(id);
+    if (timer !== undefined) {
+      window.clearTimeout(timer);
+      timers.current.delete(id);
+    }
     setNotifications((current) =>
       current.filter((notification) => notification.id !== id),
     );
   }, []);
 
+  const notify = useCallback(
+    (notification: Omit<Notification, "id">) => {
+      const id = `toast-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+      setNotifications((current) => [
+        ...current,
+        {
+          id,
+          title: notification.title,
+          description: notification.description,
+          variant: notification.variant ?? "default",
+        },
+      ]);
+      timers.current.set(
+        id,
+        window.setTimeout(() => dismiss(id), NOTIFICATION_DURATION_MS),
+      );
+
+      return id;
+    },
+    [dismiss],
+  );
+
   const dismissAll = useCallback(() => {
+    for (const timer of timers.current.values()) window.clearTimeout(timer);
+    timers.current.clear();
     setNotifications([]);
   }, []);
+
+  useEffect(
+    () => () => {
+      for (const timer of timers.current.values()) window.clearTimeout(timer);
+      timers.current.clear();
+    },
+    [],
+  );
 
   const value = useMemo(
     () => ({ notifications, notify, dismiss, dismissAll }),

@@ -20,7 +20,7 @@
 | Overall Status | In Progress |
 | Current Phase | Phase 5 — Authentication & User Management (In Progress) |
 | Next Milestone | Phase 5 — Milestone 5.2 Authorization & Ownership |
-| Last Updated | 2026-11-01 |
+| Last Updated | 2026-11-02 |
 
 ### Status Definitions
 
@@ -1098,37 +1098,62 @@ Phase 5 began with Milestone 5.1 after the user's explicit instruction to procee
 - Validation: authentication and model tests — 19/19 passed; complete non-integration server test suite — 32/32 passed; server lint, typecheck, production build, and targeted Prettier check — passed.
 - Provider limitation: live Google verification and SMTP delivery were not exercised because external provider credentials are not configured. Forgot-password requests return 503 when SMTP is unconfigured. Account deletion's transaction path was typechecked and reviewed but not run against MongoDB here.
 
-Phase 5 remains In Progress. Stop before Milestone 5.2 until instructed to continue.
+Phase 5 remains In Progress. Milestone 5.2 is underway.
 
 ## Milestone 5.2 — Authorization & Ownership
 
+**Status:** In Progress
+
 - [ ] Enforce user ownership on every protected resource.
 - [ ] Prevent access to other users' records.
-- [ ] Validate ownership of referenced entities.
-- [ ] Protect update operations.
-- [ ] Protect delete operations.
+- [x] Validate ownership of referenced entities.
+- [x] Protect update operations on currently implemented protected user resources.
+- [x] Protect delete operations on currently implemented protected user resources and relationship-integrity operations.
 - [ ] Prevent cross-user relationship references.
 - [ ] Verify authorization in all CRM modules.
 
+### Milestone 5.2 Implementation Record
+
+- Confirmed all currently mounted user-data routes (`/api/v1/users`) apply `requireAuthentication`, derive the acting user from verified session context, and protect profile updates, password changes, and account deletion. The company-logo upload route also applies authentication before multipart parsing or storage.
+- Expanded the authentication API boundary test to verify unauthenticated profile read/update, password change, account deletion, and company-logo upload requests receive 401 responses.
+- Expanded relationship-integrity coverage across Contact, Company, Deal, PipelineStage, Task, Activity, DealHistory, and Notification references. Foreign-owner references are rejected, and a foreign-owner Contact deletion is rejected before any mutation is applied.
+- Validation: complete server suite including the opt-in MongoDB relationship integration test — 33/33 passed; the live integration verified all eight owned-reference model types and confirmed a foreign-owner delete leaves records intact. Server lint, typecheck, production build, and Prettier check on changed tests — passed.
+- Scope limitation: no CRM CRUD modules or resource routes exist yet, so record-level read/update/delete authorization and cross-user relationship rejection cannot be verified end to end. Keep the milestone In Progress; each Phase 6 module must owner-scope reads and mutations, call `assertOwnedReferences` for related records, and add API-level cross-user tests before this milestone can be completed.
+
 ## Milestone 5.3 — Authentication Frontend
 
-- [ ] Create Login page.
-- [ ] Create Register page.
-- [ ] Create Forgot Password page.
-- [ ] Create Reset Password page.
-- [ ] Implement form validation.
-- [ ] Implement password visibility.
-- [ ] Implement Google sign-in button.
-- [ ] Implement authentication state.
-- [ ] Implement session restoration.
-- [ ] Implement protected routes.
-- [ ] Implement logout behavior.
-- [ ] Implement user profile menu.
-- [ ] Implement Profile Settings for username, avatar, and basic profile information.
-- [ ] Implement Security Settings for password changes and account deletion; do not add email changes.
-- [ ] Implement Preferences for theme, notification preferences, and default currency.
-- [ ] Implement authentication loading states.
-- [ ] Implement error and success feedback.
+**Status:** Completed
+
+- [x] Create Login page.
+- [x] Create Register page.
+- [x] Create Forgot Password page.
+- [x] Create Reset Password page.
+- [x] Implement form validation.
+- [x] Implement password visibility.
+- [x] Implement Google sign-in button.
+- [x] Implement authentication state.
+- [x] Implement session restoration.
+- [x] Implement protected routes.
+- [x] Implement logout behavior.
+- [x] Implement user profile menu.
+- [x] Implement Profile Settings for username, avatar, and basic profile information.
+- [x] Implement Security Settings for password changes and account deletion; do not add email changes.
+- [x] Implement Preferences for theme, notification preferences, and default currency.
+- [x] Implement authentication loading states.
+- [x] Implement error and success feedback.
+
+### Milestone 5.3 Implementation Record
+
+- Added a responsive authentication layout based on the provided Relio reference, using `apps/client/public/auth.png` as visibly labeled illustrative workspace artwork and the supplied Google icon. The hand-built preview dashboard was removed; Google is the only social sign-in option.
+- Added cookie-backed API calls and an auth context that restores the server session, synchronizes the account theme, and keeps tokens out of local storage. `/app/*` routes require a restored authenticated user and send unauthenticated users to login with their destination preserved.
+- Login and registration use React Hook Form and Zod validation, show field/API errors, support password visibility, and submit to the existing backend. Forgot/reset password forms use the existing endpoints.
+- Added profile, security, and preferences settings, including editable username/basic profile, disabled email changes, password change, confirmed account deletion, persisted theme and notification preferences, and USD-only currency. Profile images upload from the device through the authenticated Cloudinary avatar endpoint and save the resulting secure URL; the profile form supports image removal.
+- Settings actions report profile, password, avatar, and notification-preference success/failure through the existing notification provider. The profile save button maintains a stable width and exposes a spinner plus a pending label.
+- Added ignored local env configuration containing only the public Google web client ID and placeholder examples for client/server env setup. No Google client secret is exposed to Vite or bundled client code.
+- Validation: workspace `pnpm typecheck` and `pnpm build` — passed; workspace `pnpm lint` — passed with 12 existing non-blocking warnings; targeted Prettier check — passed. Server tests confirm the avatar endpoint requires authentication and uses the image signature/size limits. Browser checks verified registration routing and validation, session restoration, settings tabs and preference controls, reset-token required state, and no horizontal overflow at 1440px, 1024px, and 375px. Temporary registration accounts were deleted after tests.
+- Provider limitation: a valid Google ID token was not available for a live sign-in test; an invalid credential was rejected by the backend as expected. SMTP password-reset delivery was not exercised. Cloudinary upload was not executed against external storage; configure Cloudinary credentials to verify delivery. Configure a valid Google Web client ID/origin and SMTP credentials to test those external flows.
+
+Phase 5 remains In Progress. Milestone 5.2 remains open for record-level CRM authorization tests when CRM routes are implemented; Milestone 5.4 is the next incomplete milestone.
 
 ## Milestone 5.4 — Authentication Testing
 
@@ -2153,4 +2178,4 @@ Do not update documents with fictional or unverified implementation status.
 
 **Next Milestone:** Milestone 5.2 — Authorization & Ownership.
 
-Milestone 5.1 is complete. Stop before starting Milestone 5.2 until the user instructs you to continue.
+Milestone 5.1 is complete. Milestone 5.2 has verified the current protected routes and shared ownership guards, but remains In Progress until CRM resource routes exist for end-to-end authorization checks. Do not begin Phase 6 CRM implementation without the user's instruction.

@@ -13,6 +13,7 @@ import { healthRouter } from "./modules/health/health.routes.js";
 import { usersRouter } from "./modules/auth/users.routes.js";
 import { requireAuthentication } from "./modules/auth/auth.middleware.js";
 import { createCompanyLogoRouter } from "./modules/uploads/company-logo.routes.js";
+import { createProfileAvatarRouter } from "./modules/uploads/profile-avatar.routes.js";
 
 const corsOrigins = env.CLIENT_ORIGIN.split(",")
   .map((origin) => origin.trim())
@@ -56,5 +57,6 @@ app.use("/api/v1/health", healthRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/uploads/company-logo", createCompanyLogoRouter(requireAuthentication));
+app.use("/api/v1/uploads/avatar", createProfileAvatarRouter(requireAuthentication));
 app.use(notFoundHandler);
 app.use(errorHandler);

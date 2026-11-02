@@ -2,9 +2,16 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppShell } from "@/app/layouts/app-shell";
 import { ComponentSurfacePreview } from "@/app/component-surface-preview";
 import { ThemeSurfacePreview } from "@/app/theme-surface-preview";
+import { AuthLayout } from "@/features/auth/auth-layout";
+import { AccountSettingsPage } from "@/features/auth/account-settings-page";
 import {
-  AuthLayout,
-  AuthPlaceholder,
+  ForgotPasswordPage,
+  LoginPage,
+  RegisterPage,
+  ResetPasswordPage,
+} from "@/features/auth/auth-pages";
+import { ProtectedRoute } from "@/features/auth/protected-route";
+import {
   NotFoundPage,
   PublicHome,
   PublicLayout,
@@ -27,18 +34,19 @@ const router = createBrowserRouter([
     path: "/auth",
     element: <AuthLayout />,
     children: [
-      { path: "login", element: <AuthPlaceholder title="Login" /> },
-      { path: "register", element: <AuthPlaceholder title="Create account" /> },
-      { path: "forgot-password", element: <AuthPlaceholder title="Reset password" /> },
-      {
-        path: "reset-password",
-        element: <AuthPlaceholder title="Choose a new password" />,
-      },
+      { path: "login", element: <LoginPage /> },
+      { path: "register", element: <RegisterPage /> },
+      { path: "forgot-password", element: <ForgotPasswordPage /> },
+      { path: "reset-password", element: <ResetPasswordPage /> },
     ],
   },
   {
     path: "/app",
-    element: <AppShell />,
+    element: (
+      <ProtectedRoute>
+        <AppShell />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -84,9 +92,7 @@ const router = createBrowserRouter([
       },
       {
         path: "settings",
-        element: (
-          <RoutePlaceholder message="Account settings are not implemented yet." />
-        ),
+        element: <AccountSettingsPage />,
       },
     ],
   },

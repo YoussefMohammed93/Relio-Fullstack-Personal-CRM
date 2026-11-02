@@ -4,13 +4,16 @@ import { queryClient } from "@/lib/query-client";
 import { NotificationProvider } from "@/providers/notification-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { TooltipProvider } from "@/providers/tooltip-provider";
+import { AuthProvider } from "@/features/auth/auth-context";
 
 export function AppProviders({ children }: PropsWithChildren) {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <NotificationProvider>{children}</NotificationProvider>
+          <AuthProvider>
+            <NotificationProvider>{children}</NotificationProvider>
+          </AuthProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>

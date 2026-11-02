@@ -505,14 +505,25 @@ describe("Relio database models", () => {
     const otherOwner = new mongoose.Types.ObjectId();
     const contactId = new mongoose.Types.ObjectId();
     const companyId = new mongoose.Types.ObjectId();
+    const dealId = new mongoose.Types.ObjectId();
     const stageId = new mongoose.Types.ObjectId();
     const replacementStageId = new mongoose.Types.ObjectId();
-    const validIds = new Set([
-      contactId.toString(),
-      companyId.toString(),
-      stageId.toString(),
-      replacementStageId.toString(),
-    ]);
+    const taskId = new mongoose.Types.ObjectId();
+    const activityId = new mongoose.Types.ObjectId();
+    const dealHistoryId = new mongoose.Types.ObjectId();
+    const notificationId = new mongoose.Types.ObjectId();
+    const ownedReferences = [
+      { type: "Contact", id: contactId },
+      { type: "Company", id: companyId },
+      { type: "Deal", id: dealId },
+      { type: "PipelineStage", id: stageId },
+      { type: "PipelineStage", id: replacementStageId },
+      { type: "Task", id: taskId },
+      { type: "Activity", id: activityId },
+      { type: "DealHistory", id: dealHistoryId },
+      { type: "Notification", id: notificationId },
+    ] as const;
+    const validIds = new Set([...ownedReferences.map(({ id }) => id.toString())]);
     const mutations: IntegrityMutation[] = [];
     const fakeSession = {} as ClientSession;
 
@@ -534,14 +545,15 @@ describe("Relio database models", () => {
     };
     const integrity = createRelationshipIntegrityService(store);
 
-    await integrity.assertOwnedReferences(owner, [
-      { type: "Contact", id: contactId },
-      { type: "Company", id: companyId },
-    ]);
-    await assert.rejects(
-      integrity.assertOwnedReferences(otherOwner, [{ type: "Contact", id: contactId }]),
-      /not found/,
-    );
+    await integrity.assertOwnedReferences(owner, ownedReferences);
+    for (const reference of ownedReferences) {
+      await assert.rejects(
+        integrity.assertOwnedReferences(otherOwner, [reference]),
+        /not found/,
+      );
+    }
+    await assert.rejects(integrity.deleteContact(otherOwner, contactId), /not found/);
+    assert.equal(mutations.length, 0);
 
     await integrity.deleteContact(owner, contactId);
     assert.deepEqual(

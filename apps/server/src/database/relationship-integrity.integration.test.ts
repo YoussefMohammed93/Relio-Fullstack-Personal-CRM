@@ -12,6 +12,7 @@ import {
   Contact,
   Deal,
   DealHistory,
+  Notification,
   PipelineStage,
   Task,
   User,
@@ -27,6 +28,7 @@ it(
 
     const token = randomUUID();
     let ownerId: mongoose.Types.ObjectId | undefined;
+    let otherOwnerId: mongoose.Types.ObjectId | undefined;
 
     try {
       const owner = await User.create({
@@ -36,6 +38,13 @@ it(
         lastName: "Integration",
       });
       ownerId = owner._id;
+      const otherOwner = await User.create({
+        username: `int-other-${token}`,
+        email: `relio-integration-other-${token}@example.test`,
+        firstName: "Other",
+        lastName: "Integration",
+      });
+      otherOwnerId = otherOwner._id;
 
       const [stage, replacementStage] = await PipelineStage.create([
         {
@@ -96,6 +105,38 @@ it(
         deal: deal._id,
         eventType: "created",
       });
+      const notification = await Notification.create({
+        owner: ownerId,
+        type: "upcoming_task_reminder",
+        title: `Integration Notification ${token}`,
+        message: "Integration fixture",
+      });
+
+      const ownedReferences = [
+        { type: "Contact", id: contact._id },
+        { type: "Company", id: company._id },
+        { type: "Deal", id: deal._id },
+        { type: "PipelineStage", id: stage._id },
+        { type: "Task", id: task._id },
+        { type: "Activity", id: contactActivity._id },
+        { type: "DealHistory", id: dealHistory._id },
+        { type: "Notification", id: notification._id },
+      ] as const;
+
+      await relationshipIntegrity.assertOwnedReferences(ownerId, ownedReferences);
+      for (const reference of ownedReferences) {
+        await assert.rejects(
+          relationshipIntegrity.assertOwnedReferences(otherOwnerId, [reference]),
+          /not found/,
+        );
+      }
+
+      await assert.rejects(
+        relationshipIntegrity.deleteContact(otherOwnerId, contact._id),
+        /not found/,
+      );
+      assert.ok(await Contact.exists({ _id: contact._id, owner: ownerId }));
+      assert.ok(await Task.exists({ _id: task._id, owner: ownerId }));
 
       await relationshipIntegrity.deleteContact(ownerId, contact._id);
       assert.equal(await Contact.exists({ _id: contact._id }), null);
@@ -131,10 +172,14 @@ it(
           Contact.deleteMany({ owner: ownerId }),
           Deal.deleteMany({ owner: ownerId }),
           DealHistory.deleteMany({ owner: ownerId }),
+          Notification.deleteMany({ owner: ownerId }),
           PipelineStage.deleteMany({ owner: ownerId }),
           Task.deleteMany({ owner: ownerId }),
           User.deleteOne({ _id: ownerId }),
         ]);
+      }
+      if (otherOwnerId) {
+        await User.deleteOne({ _id: otherOwnerId });
       }
       await mongoose.disconnect();
     }

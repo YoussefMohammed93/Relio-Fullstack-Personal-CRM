@@ -8,24 +8,49 @@ export const MAX_COMPANY_LOGO_SIZE_BYTES = 5 * 1024 * 1024;
 
 const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-export async function validateCompanyLogoBuffer(buffer: Buffer): Promise<void> {
+async function validateImageBuffer(buffer: Buffer, description: string): Promise<void> {
   if (buffer.byteLength > MAX_COMPANY_LOGO_SIZE_BYTES) {
-    throw new ValidationError("Company logo must be 5 MB or smaller");
+    throw new ValidationError(`${description} must be 5 MB or smaller`);
   }
 
   const fileType = await fileTypeFromBuffer(buffer);
   if (!fileType || !allowedImageTypes.has(fileType.mime)) {
-    throw new ValidationError("Company logo must be a JPEG, PNG, or WebP image");
+    throw new ValidationError(`${description} must be a JPEG, PNG, or WebP image`);
   }
 }
 
-export async function uploadCompanyLogo(buffer: Buffer): Promise<{
+export function validateCompanyLogoBuffer(buffer: Buffer): Promise<void> {
+  return validateImageBuffer(buffer, "Company logo");
+}
+
+export function validateUserAvatarBuffer(buffer: Buffer): Promise<void> {
+  return validateImageBuffer(buffer, "Profile image");
+}
+
+interface ImageUploadOptions {
+  folder: string;
+  public_id?: string;
+  overwrite?: boolean;
+  invalidate?: boolean;
+  transformation: Array<{
+    width: number;
+    height: number;
+    crop: "limit" | "fill";
+    gravity?: "auto";
+  }>;
+}
+
+async function uploadImage(
+  buffer: Buffer,
+  options: ImageUploadOptions,
+  description: string,
+): Promise<{
   publicId: string;
   secureUrl: string;
   format: string;
   bytes: number;
 }> {
-  await validateCompanyLogoBuffer(buffer);
+  await validateImageBuffer(buffer, description);
 
   const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = env;
   if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
@@ -42,10 +67,9 @@ export async function uploadCompanyLogo(buffer: Buffer): Promise<{
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: "relio/company-logos",
+        ...options,
         resource_type: "image",
         allowed_formats: ["jpg", "png", "webp"],
-        transformation: [{ width: 1200, height: 1200, crop: "limit" }],
       },
       (error, result) => {
         if (error || !result) {
@@ -64,4 +88,29 @@ export async function uploadCompanyLogo(buffer: Buffer): Promise<{
 
     Readable.from(buffer).pipe(uploadStream);
   });
+}
+
+export async function uploadCompanyLogo(buffer: Buffer) {
+  return uploadImage(
+    buffer,
+    {
+      folder: "relio/company-logos",
+      transformation: [{ width: 1200, height: 1200, crop: "limit" }],
+    },
+    "Company logo",
+  );
+}
+
+export async function uploadUserAvatar(buffer: Buffer, userId: string) {
+  return uploadImage(
+    buffer,
+    {
+      folder: "relio/user-avatars",
+      public_id: userId,
+      overwrite: true,
+      invalidate: true,
+      transformation: [{ width: 512, height: 512, crop: "fill", gravity: "auto" }],
+    },
+    "Profile image",
+  );
 }

@@ -3,6 +3,7 @@ import {
   useLayoutEffect,
   useMemo,
   useState,
+  useCallback,
   type PropsWithChildren,
 } from "react";
 import { ThemeContext, type ThemePreference } from "@/providers/theme-context";
@@ -48,7 +49,7 @@ export function ThemeProvider({ children }: PropsWithChildren) {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
-  const setTheme = (nextTheme: ThemePreference) => {
+  const setTheme = useCallback((nextTheme: ThemePreference) => {
     try {
       window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
     } catch {
@@ -56,9 +57,9 @@ export function ThemeProvider({ children }: PropsWithChildren) {
     }
 
     setThemeState(nextTheme);
-  };
+  }, []);
 
-  const value = useMemo(() => ({ theme, setTheme }), [theme]);
+  const value = useMemo(() => ({ theme, setTheme }), [setTheme, theme]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

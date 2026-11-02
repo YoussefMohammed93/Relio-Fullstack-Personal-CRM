@@ -8,5 +8,9 @@ export default defineConfig({
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
-  server: { port: 3000, strictPort: true },
+  server: {
+    port: 3000,
+    strictPort: true,
+    proxy: { "/api": "http://localhost:5000" },
+  },
 });

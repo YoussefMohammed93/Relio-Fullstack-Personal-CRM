@@ -103,7 +103,11 @@ describe("authentication API boundary", () => {
       const [
         registrationResponse,
         currentUserResponse,
+        profileUpdateResponse,
+        passwordChangeResponse,
+        accountDeletionResponse,
         uploadResponse,
+        avatarUploadResponse,
         logoutResponse,
       ] = await Promise.all([
         fetch(`${baseUrl}/auth/register`, {
@@ -116,13 +120,36 @@ describe("authentication API boundary", () => {
           }),
         }),
         fetch(`${baseUrl}/users/me`),
+        fetch(`${baseUrl}/users/me`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ username: "Updated" }),
+        }),
+        fetch(`${baseUrl}/users/me/password`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            currentPassword: "current-password",
+            newPassword: "new-password-long",
+          }),
+        }),
+        fetch(`${baseUrl}/users/me`, {
+          method: "DELETE",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ password: "current-password" }),
+        }),
         fetch(`${baseUrl}/uploads/company-logo`, { method: "POST" }),
+        fetch(`${baseUrl}/uploads/avatar`, { method: "POST" }),
         fetch(`${baseUrl}/auth/logout`, { method: "POST" }),
       ]);
 
       assert.equal(registrationResponse.status, 400);
       assert.equal(currentUserResponse.status, 401);
+      assert.equal(profileUpdateResponse.status, 401);
+      assert.equal(passwordChangeResponse.status, 401);
+      assert.equal(accountDeletionResponse.status, 401);
       assert.equal(uploadResponse.status, 401);
+      assert.equal(avatarUploadResponse.status, 401);
       assert.equal(logoutResponse.status, 200);
       assert.match(logoutResponse.headers.get("set-cookie") ?? "", /relio_session=;/);
     } finally {

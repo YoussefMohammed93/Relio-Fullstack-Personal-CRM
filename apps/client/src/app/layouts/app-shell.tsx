@@ -13,14 +13,18 @@ import {
   Handshake,
   LayoutDashboard,
   ListTodo,
-  UserRound,
+  LogOut,
   UsersRound,
   X,
 } from "lucide-react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Avatar } from "@/components/avatar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Button } from "@/components/button";
+import { DropdownMenu } from "@/components/dropdown-menu";
 import { PageHeader } from "@/components/page-header";
+import type { MenuEntry } from "@/components/menu-list";
+import { useAuth } from "@/features/auth/auth-state";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { useNotifications } from "@/providers/notification-provider";
 
@@ -58,7 +62,9 @@ export function AppShell() {
   const mobileNavigationCloseRef = useRef<HTMLButtonElement>(null);
   const wasMobileOpen = useRef(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { notify } = useNotifications();
+  const { user, logout } = useAuth();
   const pageTitle =
     pageTitles.get(location.pathname) ??
     [...pageTitles.entries()].find(
@@ -125,6 +131,25 @@ export function AppShell() {
   }, [isMobileOpen]);
 
   const closeMobileNavigation = () => setIsMobileOpen(false);
+  const profileName = user?.displayName || user?.username || "Your account";
+  const profileMenuItems: MenuEntry[] = [
+    { type: "label", label: user?.email ?? "Account" },
+    {
+      id: "profile-settings",
+      label: "Account settings",
+      icon: <Settings aria-hidden="true" />,
+      onSelect: () => navigate("/app/settings"),
+    },
+    { type: "separator" },
+    {
+      id: "sign-out",
+      label: "Sign out",
+      icon: <LogOut aria-hidden="true" />,
+      onSelect: () => {
+        void logout().finally(() => navigate("/auth/login", { replace: true }));
+      },
+    },
+  ];
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -145,9 +170,10 @@ export function AppShell() {
         role={isMobileOpen ? "dialog" : undefined}
         aria-modal={isMobileOpen ? true : undefined}
         ref={mobileNavigationRef}
-        className={`fixed inset-y-0 inset-s-0 z-50 flex w-64 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 motion-reduce:transition-none md:relative md:z-auto md:translate-x-0 md:visible ${
+        style={{ width: isCollapsed && !isMobileOpen ? 76 : 256 }}
+        className={`fixed inset-y-0 inset-s-0 z-50 flex min-w-0 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform duration-200 motion-reduce:transition-none md:translate-x-0 md:visible ${
           isMobileOpen ? "translate-x-0 visible" : "-translate-x-full invisible"
-        } ${isCollapsed ? "md:w-19" : "md:w-64"}`}
+        }`}
       >
         <div
           className={`flex h-16 shrink-0 items-center justify-between gap-3 px-4 ${
@@ -199,7 +225,7 @@ export function AppShell() {
 
         <nav
           aria-label="Primary navigation"
-          className="flex-1 overflow-y-auto px-3 py-4"
+          className="min-h-0 flex-1 overflow-hidden px-3 py-4"
         >
           {navigationGroups.map((group) => (
             <div key={group.label} className="mb-6 last:mb-0">
@@ -246,7 +272,12 @@ export function AppShell() {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col" inert={isMobileOpen}>
+      <div
+        className={`min-w-0 flex-1 flex-col md:flex ${
+          isCollapsed ? "md:ms-19" : "md:ms-64"
+        }`}
+        inert={isMobileOpen}
+      >
         <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <button
@@ -303,27 +334,28 @@ export function AppShell() {
             >
               <Bell aria-hidden="true" className="size-4.5" />
             </NavLink>
-            <button
-              type="button"
-              aria-label="Profile menu"
-              title="Profile menu"
-              className="flex size-9 items-center justify-center gap-2 rounded-md text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:w-auto lg:px-2"
-              onClick={() =>
-                notify({
-                  title: "Profile access will be available with account setup.",
-                  variant: "info",
-                })
+            <DropdownMenu
+              label="Account menu"
+              align="end"
+              items={profileMenuItems}
+              trigger={
+                <button
+                  type="button"
+                  aria-label="Account menu"
+                  title="Account menu"
+                  className="flex size-9 items-center justify-center gap-2 rounded-md text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:w-auto lg:px-2"
+                >
+                  <Avatar name={profileName} src={user?.avatarUrl} size="sm" />
+                  <span className="hidden max-w-36 truncate text-sm font-medium lg:inline">
+                    {profileName}
+                  </span>
+                  <ChevronDown
+                    aria-hidden="true"
+                    className="hidden size-4 text-muted-foreground lg:block"
+                  />
+                </button>
               }
-            >
-              <span className="grid size-7 place-items-center rounded-full bg-secondary text-secondary-foreground">
-                <UserRound aria-hidden="true" className="size-4" />
-              </span>
-              <span className="hidden text-sm font-medium lg:inline">Workspace</span>
-              <ChevronDown
-                aria-hidden="true"
-                className="hidden size-4 text-muted-foreground lg:block"
-              />
-            </button>
+            />
           </div>
         </header>
 

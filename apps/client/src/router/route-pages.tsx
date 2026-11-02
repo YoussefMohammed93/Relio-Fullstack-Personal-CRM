@@ -13,19 +13,6 @@ export function PublicLayout() {
   );
 }
 
-export function AuthLayout() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-6 py-10 text-foreground">
-      <div className="w-full max-w-sm">
-        <Link to="/" className="text-lg font-semibold text-foreground">
-          Relio
-        </Link>
-        <Outlet />
-      </div>
-    </main>
-  );
-}
-
 export function PublicHome() {
   return (
     <section className="space-y-4 py-16">
@@ -35,23 +22,20 @@ export function PublicHome() {
       <p className="max-w-prose text-sm leading-6 text-muted-foreground">
         The public product site is planned for a later phase.
       </p>
-      <Link
-        to="/app"
-        className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline"
-      >
-        Open the workspace
-      </Link>
-    </section>
-  );
-}
-
-export function AuthPlaceholder({ title }: { title: string }) {
-  return (
-    <section className="space-y-3 py-10">
-      <h1 className="text-xl font-semibold">{title}</h1>
-      <p className="text-sm leading-6 text-muted-foreground">
-        Authentication screens will be implemented in the authentication phase.
-      </p>
+      <div className="flex flex-wrap items-center gap-4">
+        <Link
+          to="/auth/register"
+          className="inline-flex min-h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          Create account
+        </Link>
+        <Link
+          to="/auth/login"
+          className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Sign in
+        </Link>
+      </div>
     </section>
   );
 }
