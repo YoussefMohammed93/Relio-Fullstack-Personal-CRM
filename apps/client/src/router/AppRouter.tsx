@@ -11,6 +11,8 @@ import {
   ResetPasswordPage,
 } from "@/features/auth/auth-pages";
 import { ProtectedRoute } from "@/features/auth/protected-route";
+import { ContactDetailsPage } from "@/features/contacts/contact-details-page";
+import { ContactsPage } from "@/features/contacts/contacts-page";
 import {
   NotFoundPage,
   PublicHome,
@@ -54,12 +56,8 @@ const router = createBrowserRouter([
           <RoutePlaceholder message="Dashboard metrics will appear here when the dashboard is implemented." />
         ),
       },
-      {
-        path: "contacts",
-        element: (
-          <RoutePlaceholder message="Contact management is not implemented yet." />
-        ),
-      },
+      { path: "contacts/:contactId", element: <ContactDetailsPage /> },
+      { path: "contacts", element: <ContactsPage /> },
       {
         path: "companies",
         element: (

@@ -269,25 +269,34 @@ export function createRelationshipIntegrityService(
       ownerId: mongoose.Types.ObjectId,
       contactId: mongoose.Types.ObjectId,
     ) {
+      await this.deleteContacts(ownerId, [contactId]);
+    },
+
+    async deleteContacts(
+      ownerId: mongoose.Types.ObjectId,
+      contactIds: readonly mongoose.Types.ObjectId[],
+    ) {
       await store.withTransaction(async (session) => {
         await assertOwnedReferences(
           ownerId,
-          [{ type: "Contact", id: contactId }],
+          contactIds.map((id) => ({ type: "Contact" as const, id })),
           session,
         );
-        await store.apply(
-          { type: "delete_contact_tasks", ownerId, contactId },
-          session,
-        );
-        await store.apply(
-          { type: "delete_contact_activities", ownerId, contactId },
-          session,
-        );
-        await store.apply(
-          { type: "unlink_contact_from_deals", ownerId, contactId },
-          session,
-        );
-        await store.apply({ type: "delete_contact", ownerId, contactId }, session);
+        for (const contactId of contactIds) {
+          await store.apply(
+            { type: "delete_contact_tasks", ownerId, contactId },
+            session,
+          );
+          await store.apply(
+            { type: "delete_contact_activities", ownerId, contactId },
+            session,
+          );
+          await store.apply(
+            { type: "unlink_contact_from_deals", ownerId, contactId },
+            session,
+          );
+          await store.apply({ type: "delete_contact", ownerId, contactId }, session);
+        }
       });
     },
 

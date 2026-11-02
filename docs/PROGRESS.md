@@ -18,8 +18,8 @@
 | Project | Relio |
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
-| Current Phase | Phase 5 — Authentication & User Management (In Progress) |
-| Next Milestone | Phase 5 — Milestone 5.2 Authorization & Ownership |
+| Current Phase | Phase 6 — Core CRM Modules (In Progress) |
+| Next Milestone | Phase 6 — Milestone 6.2 Companies Module |
 | Last Updated | 2026-11-02 |
 
 ### Status Definitions
@@ -43,7 +43,7 @@ A phase must not be marked Completed just because its main UI or initial impleme
 | 3 | Backend Infrastructure & API Foundation | Completed |
 | 4 | Database Architecture & Data Modeling | Completed |
 | 5 | Authentication & User Management | In Progress |
-| 6 | Core CRM Modules | Not Started |
+| 6 | Core CRM Modules | In Progress |
 | 7 | Calendar & Notifications | Not Started |
 | 8 | Dashboard, Global Search & Data Export | Not Started |
 | 9 | Landing Page & Onboarding | Not Started |
@@ -1153,7 +1153,7 @@ Phase 5 remains In Progress. Milestone 5.2 is underway.
 - Validation: workspace `pnpm typecheck` and `pnpm build` — passed; workspace `pnpm lint` — passed with 12 existing non-blocking warnings; targeted Prettier check — passed. Server tests confirm the avatar endpoint requires authentication and uses the image signature/size limits. Browser checks verified registration routing and validation, session restoration, settings tabs and preference controls, reset-token required state, and no horizontal overflow at 1440px, 1024px, and 375px. Temporary registration accounts were deleted after tests.
 - Provider limitation: a valid Google ID token was not available for a live sign-in test; an invalid credential was rejected by the backend as expected. SMTP password-reset delivery was not exercised. Cloudinary upload was not executed against external storage; configure Cloudinary credentials to verify delivery. Configure a valid Google Web client ID/origin and SMTP credentials to test those external flows.
 
-Phase 5 remains In Progress. Milestone 5.2 remains open for record-level CRM authorization tests when CRM routes are implemented; Milestone 5.4 is the next incomplete milestone.
+Phase 5 remains In Progress because successful Google sign-in and SMTP reset-email delivery still need provider-backed verification. Milestone 5.2 is being closed incrementally as Phase 6 modules add owner-scoped routes and cross-user API tests; Contacts is now verified, while the remaining CRM modules are not implemented yet.
 
 ## Milestone 5.4 — Authentication Testing
 
@@ -1198,94 +1198,108 @@ Phase 5 remains In Progress. Milestone 5.2 remains open for record-level CRM aut
 
 # Phase 6 — Core CRM Modules
 
-**Status:** Not Started
+**Status:** In Progress
 
 ## Milestone 6.1 — Contacts Module
 
+**Status:** Completed
+
 ### Backend
 
-- [ ] Implement Contact create endpoint.
-- [ ] Implement Contact list endpoint.
-- [ ] Implement Contact details endpoint.
-- [ ] Implement Contact update endpoint.
-- [ ] Implement Contact delete endpoint.
-- [ ] Implement search.
-- [ ] Implement filters.
-- [ ] Implement sorting.
-- [ ] Implement pagination.
-- [ ] Implement bulk actions.
-- [ ] Implement Contact statistics.
-- [ ] Implement related Deals retrieval.
-- [ ] Implement related Tasks retrieval.
-- [ ] Implement Contact Activities retrieval.
-- [ ] Enforce ownership and validation.
+- [x] Implement Contact create endpoint.
+- [x] Implement Contact list endpoint.
+- [x] Implement Contact details endpoint.
+- [x] Implement Contact update endpoint.
+- [x] Implement Contact delete endpoint.
+- [x] Implement search.
+- [x] Implement filters.
+- [x] Implement sorting.
+- [x] Implement pagination.
+- [x] Implement bulk actions.
+- [x] Implement Contact statistics.
+- [x] Implement related Deals retrieval.
+- [x] Implement related Tasks retrieval.
+- [x] Implement Contact Activities retrieval.
+- [x] Enforce ownership and validation.
 
 ### Frontend
 
-- [ ] Create Contacts list page.
-- [ ] Implement table view.
-- [ ] Implement grid view.
-- [ ] Implement search.
-- [ ] Implement filters.
-- [ ] Implement sorting.
-- [ ] Implement pagination.
-- [ ] Implement row selection.
-- [ ] Implement bulk actions.
-- [ ] Implement Add Contact side sheet.
-- [ ] Implement Edit Contact side sheet.
-- [ ] Implement Delete confirmation.
-- [ ] Implement Contact details page.
-- [ ] Implement Overview tab.
-- [ ] Implement Deals tab.
-- [ ] Implement Tasks & Follow-ups tab.
-- [ ] Implement Activity Timeline.
-- [ ] Implement loading states.
-- [ ] Implement empty states.
-- [ ] Implement error states.
-- [ ] Implement success feedback.
-- [ ] Validate responsive behavior.
+- [x] Create Contacts list page.
+- [x] Implement table view.
+- [x] Implement grid view.
+- [x] Implement search.
+- [x] Implement filters.
+- [x] Implement sorting.
+- [x] Implement pagination.
+- [x] Implement row selection.
+- [x] Implement bulk actions.
+- [x] Implement Add Contact side sheet.
+- [x] Implement Edit Contact side sheet.
+- [x] Implement Delete confirmation.
+- [x] Implement Contact details page.
+- [x] Implement Overview tab.
+- [x] Implement Deals tab.
+- [x] Implement Tasks & Follow-ups tab.
+- [x] Implement Activity Timeline.
+- [x] Implement loading states.
+- [x] Implement empty states.
+- [x] Implement error states.
+- [x] Implement success feedback.
+- [x] Validate responsive behavior.
 
 ### Contact Fields & Rules
 
-- [ ] First Name (required).
-- [ ] Last Name (required).
-- [ ] Email.
-- [ ] Phone.
-- [ ] Company.
-- [ ] Contact Type: Lead, Client, Former Client, Partner.
-- [ ] Job Title.
-- [ ] Tags.
-- [ ] Website.
-- [ ] Notes.
-- [ ] Support zero or one Company.
-- [ ] Support multiple Deals per Contact.
-- [ ] Support searchable Company selection.
+- [x] First Name (required).
+- [x] Last Name (required).
+- [x] Email.
+- [x] Phone.
+- [x] Company.
+- [x] Contact Type: Lead, Client, Former Client, Partner.
+- [x] Job Title.
+- [x] Tags.
+- [x] Website.
+- [x] Notes.
+- [x] Support zero or one Company.
+- [x] Support multiple Deals per Contact.
+- [x] Support searchable Company selection.
 
 ### Contact List Behavior
 
-- [ ] Show avatar/name/email.
-- [ ] Show Company.
-- [ ] Show Contact Type.
-- [ ] Show Deals count.
-- [ ] Show Last Activity.
-- [ ] Show Added date.
-- [ ] Show row actions.
-- [ ] Filter by Type.
-- [ ] Filter by Company.
-- [ ] Filter by Tags.
-- [ ] Filter by Date Added.
-- [ ] Sort by Name.
-- [ ] Sort by Recently Added.
-- [ ] Sort by Last Activity.
+- [x] Show avatar/name/email.
+- [x] Show Company.
+- [x] Show Contact Type.
+- [x] Show Deals count.
+- [x] Show Last Activity.
+- [x] Show Added date.
+- [x] Show row actions.
+- [x] Filter by Type.
+- [x] Filter by Company.
+- [x] Filter by Tags.
+- [x] Filter by Date Added.
+- [x] Sort by Name.
+- [x] Sort by Recently Added.
+- [x] Sort by Last Activity.
 
 ### Contact Deletion Rules
 
-- [ ] Delete Contact.
-- [ ] Delete related Tasks and Follow-ups.
-- [ ] Delete related Activities.
-- [ ] Retain related Deals.
-- [ ] Set deleted Contact as null on retained Deals.
-- [ ] Retain Deal History.
+- [x] Delete Contact.
+- [x] Delete related Tasks and Follow-ups.
+- [x] Delete related Activities.
+- [x] Retain related Deals.
+- [x] Set deleted Contact as null on retained Deals.
+- [x] Retain Deal History.
+
+### Milestone 6.1 Implementation Record
+
+- Added the authenticated `/api/v1/contacts` module with strict Zod request/query schemas, owner-scoped CRUD, allowlisted search/filter/sort/page handling, type statistics, searchable owner-scoped Company options, and related Deal, Task, and Activity retrieval. Contact details include owner-scoped Deal count and latest Activity date.
+- Contact deletion reuses the relationship-integrity transaction boundary. Bulk deletion validates every selected Contact before mutating; related Tasks and Activities are deleted, retained Deals have `primaryContact` set to `null`, and Deal History is preserved. Cross-user record reads and writes return not found, and foreign-owner Company references are rejected.
+- Added the authenticated Contacts list and profile routes. The list supports table/grid views, selection, bulk deletion, filters, sorting, server pagination, stats, loading/empty/error/success states, and Add/Edit sheets. Contact profiles include Overview, Deals, Tasks & Follow-ups, and Activity Timeline tabs.
+- Company selection and filtering use Hairline's server-searchable Combobox with abortable requests. A migration command, `pnpm --filter @relio/server migrate:contact-email-index`, changes the previous unique `{ owner, email }` index to non-unique because the PRD does not require unique Contact emails; it is restricted to development environments. The migration was applied to the configured development database.
+- Validation: Contact schema tests — 4/4 passed; non-integration server suite — 37/37 passed; `RELIO_CONTACTS_INTEGRATION=1 pnpm --filter @relio/server exec node --import tsx --test src/modules/contacts/contacts.integration.test.ts` — 1/1 passed against MongoDB. The integration covers auth, owner isolation, Company references, list filters/pagination/stats, Contact updates, related records, and deletion invariants.
+- Workspace `pnpm lint` — passed with 0 errors and 13 warnings in existing components/providers; `pnpm typecheck` — passed; `pnpm build` — passed. Prettier passes for all changed files. Workspace `pnpm format:check` still reports the pre-existing formatting difference in `apps/server/src/database/models/company.ts`.
+- Browser verification: Contact creation, form validation/feedback, profile navigation, tabs and empty states, and responsive list/profile layouts at 1440px, 768px, 375px, and 320px were checked. No horizontal overflow remained. A temporary browser account and its records were deleted through Settings after verification.
+
+Phase 6.1 is complete. Milestone 6.2 — Companies is the next incomplete milestone. Phase 5 remains In Progress for external Google/SMTP verification and authorization coverage in the remaining CRM modules.
 
 ## Milestone 6.2 — Companies Module
 
@@ -2182,8 +2196,8 @@ Do not update documents with fictional or unverified implementation status.
 
 # 4. Current Next Action
 
-**Current Phase:** Phase 5 — Authentication & User Management (In Progress).
+**Current Phase:** Phase 6 — Core CRM Modules (In Progress).
 
-**Next Milestone:** Milestone 5.2 — Authorization & Ownership.
+**Next Milestone:** Milestone 6.2 — Companies Module.
 
-Milestone 5.1 is complete. Milestone 5.2 has verified the current protected routes and shared ownership guards, but remains In Progress until CRM resource routes exist for end-to-end authorization checks. Do not begin Phase 6 CRM implementation without the user's instruction.
+Milestone 6.1 — Contacts is complete and verified. Continue with Companies only; do not begin later Phase 6 milestones automatically. Phase 5 remains In Progress for provider-backed Google/SMTP verification and authorization coverage in the remaining CRM modules.

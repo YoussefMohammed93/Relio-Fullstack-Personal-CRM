@@ -88,7 +88,7 @@ const contactSchema = new Schema<IContact>(
   { timestamps: true },
 );
 
-contactSchema.index({ owner: 1, email: 1 }, { unique: true, sparse: true });
+contactSchema.index({ owner: 1, email: 1 });
 contactSchema.index({ owner: 1, lastName: 1, firstName: 1 });
 contactSchema.index({ owner: 1, company: 1 });
 

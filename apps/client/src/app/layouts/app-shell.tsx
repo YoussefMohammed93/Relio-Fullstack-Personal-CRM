@@ -65,11 +65,16 @@ export function AppShell() {
   const navigate = useNavigate();
   const { notify } = useNotifications();
   const { user, logout } = useAuth();
+  const isContactsRoute =
+    location.pathname === "/app/contacts" ||
+    location.pathname.startsWith("/app/contacts/");
   const pageTitle =
     pageTitles.get(location.pathname) ??
-    [...pageTitles.entries()].find(
-      ([path]) => path !== "/" && location.pathname.startsWith(`${path}/`),
-    )?.[1] ??
+    [...pageTitles.entries()]
+      .sort(([left], [right]) => right.length - left.length)
+      .find(
+        ([path]) => path !== "/" && location.pathname.startsWith(`${path}/`),
+      )?.[1] ??
     "Workspace";
 
   useEffect(() => {
@@ -361,7 +366,9 @@ export function AppShell() {
 
         <main className="w-full flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-screen-2xl">
-            <PageHeader title={pageTitle} description="Your freelance workspace" />
+            {!isContactsRoute ? (
+              <PageHeader title={pageTitle} description="Your freelance workspace" />
+            ) : null}
             <Outlet />
           </div>
         </main>

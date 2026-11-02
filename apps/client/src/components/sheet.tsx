@@ -40,6 +40,8 @@ export interface SheetProps {
   footer?: React.ReactNode | ((api: { close: () => void }) => React.ReactNode);
   /** Width of a side sheet in px. */
   width?: number;
+  /** Size a side sheet to its content while keeping the body scrollable. */
+  fitContent?: boolean;
   className?: string;
 }
 
@@ -54,6 +56,7 @@ export function Sheet({
   children,
   footer,
   width = 400,
+  fitContent = false,
   className = "",
 }: SheetProps) {
   const reduced = useInteractionReducedMotion();
@@ -171,7 +174,7 @@ export function Sheet({
             style={{ width: bottom ? undefined : `min(${width}px, 100vw)` }}
           >
             <div
-              className="pointer-events-auto flex size-full will-change-transform"
+              className={`pointer-events-auto flex ${fitContent && !bottom ? "w-full self-center" : "size-full"} will-change-transform`}
               style={{
                 transform: shown || reduced ? "none" : hidden,
                 opacity: reduced ? (shown ? 1 : 0) : 1,
@@ -184,7 +187,7 @@ export function Sheet({
                 ref={panel}
                 data-modal-panel=""
                 tabIndex={-1}
-                className={`flex w-full flex-col bg-background shadow-[0_0_0_1px_var(--border)] outline-none ${bottom ? "max-h-[85dvh] max-w-[640px] rounded-[22px]" : "h-full rounded-[20px]"} ${className}`}
+                className={`flex w-full flex-col bg-background shadow-[0_0_0_1px_var(--border)] outline-none ${bottom ? "max-h-[85dvh] max-w-[640px] rounded-[22px]" : fitContent ? "h-fit max-h-full rounded-[20px]" : "h-full rounded-[20px]"} ${className}`}
               >
                 {bottom && (
                   <div
@@ -227,7 +230,9 @@ export function Sheet({
                     </svg>
                   </button>
                 </div>
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4 text-[13.5px] leading-relaxed text-foreground">
+                <div
+                  className={`${fitContent && !bottom ? "max-h-[calc(100dvh-13rem)] flex-none" : "min-h-0 flex-1"} overflow-y-auto overscroll-contain px-5 pb-4 text-[13.5px] leading-relaxed text-foreground`}
+                >
                   {typeof children === "function" ? children({ close }) : children}
                 </div>
                 {footerNode !== undefined && (

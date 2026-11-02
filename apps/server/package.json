@@ -9,7 +9,8 @@
     "start": "node dist/server.js",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "seed:dev": "tsx src/database/seed-cli.ts"
+    "seed:dev": "tsx src/database/seed-cli.ts",
+    "migrate:contact-email-index": "tsx src/database/migrations/contact-email-index.ts"
   },
   "dependencies": {
     "@relio/shared": "workspace:*",
