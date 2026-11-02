@@ -1157,23 +1157,31 @@ Phase 5 remains In Progress. Milestone 5.2 remains open for record-level CRM aut
 
 ## Milestone 5.4 — Authentication Testing
 
-- [ ] Test successful registration.
-- [ ] Test duplicate email registration.
-- [ ] Test invalid credentials.
-- [ ] Test successful login.
-- [ ] Test logout.
-- [ ] Test session restoration.
-- [ ] Test expired tokens.
-- [ ] Test Google OAuth.
-- [ ] Test forgot password.
-- [ ] Test password reset.
-- [ ] Test change password.
-- [ ] Test account deletion.
-- [ ] Test profile and preference persistence, including USD as the default currency.
-- [ ] Verify email changes and multi-currency conversion are not exposed.
-- [ ] Test protected routes.
-- [ ] Test cross-user access prevention.
-- [ ] Run lint, typecheck, and build.
+- [x] Test successful registration.
+- [x] Test duplicate email registration.
+- [x] Test invalid credentials.
+- [x] Test successful login.
+- [x] Test logout.
+- [x] Test session restoration.
+- [x] Test expired tokens.
+- [x] Test Google OAuth.
+- [x] Test forgot password.
+- [x] Test password reset.
+- [x] Test change password.
+- [x] Test account deletion.
+- [x] Test profile and preference persistence, including USD as the default currency.
+- [x] Verify email changes and multi-currency conversion are not exposed.
+- [x] Test protected routes.
+- [x] Test cross-user access prevention.
+- [x] Run lint, typecheck, and build.
+
+### Milestone 5.4 Implementation Record
+
+- Added `apps/server/src/modules/auth/auth.integration.test.ts`, an opt-in real-HTTP integration test gated by `RELIO_AUTH_INTEGRATION=1`. It requires `NODE_ENV=development`, uses unique temporary `.test` accounts, and removes its fixtures in `finally`.
+- Verified successful registration and immediate session access, duplicate email conflict, invalid password rejection, successful login, HTTP-only/Lax/path cookie attributes, session restoration, expired-token rejection, logout cookie clearing and invalidation, reset-token consumption and reuse rejection, password-change session rotation, and account deletion through a MongoDB transaction.
+- Verified persisted theme and notification preferences, USD default/persistence, rejection of email updates and non-USD currency, and unauthenticated protected-route rejection. With configured Google credentials, an invalid ID token is rejected. Forgot-password requests return the expected 503 while SMTP is unconfigured.
+- Validation: all server tests, including the opt-in authentication and relationship MongoDB integration tests — 35/35 passed; workspace `pnpm lint` — passed with 0 errors and 12 existing client warnings; `pnpm typecheck` — passed; `pnpm build` — passed; targeted Prettier check on the new test — passed.
+- Remaining verification: successful Google sign-in requires a provider-issued valid ID token; password-reset email delivery requires SMTP credentials. CRM record-level cross-user API tests cannot run until those resource routes are implemented in Phase 6; existing Milestone 5.2 relationship guards remain covered separately. Keep this milestone and Phase 5 In Progress until these cases can be verified.
 
 ### Phase 5 Acceptance Criteria
 
