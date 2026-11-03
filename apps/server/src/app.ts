@@ -15,6 +15,7 @@ import { requireAuthentication } from "./modules/auth/auth.middleware.js";
 import { createCompanyLogoRouter } from "./modules/uploads/company-logo.routes.js";
 import { createProfileAvatarRouter } from "./modules/uploads/profile-avatar.routes.js";
 import { createContactsRouter } from "./modules/contacts/contacts.routes.js";
+import { createCompaniesRouter } from "./modules/companies/companies.routes.js";
 
 const corsOrigins = env.CLIENT_ORIGIN.split(",")
   .map((origin) => origin.trim())
@@ -58,6 +59,7 @@ app.use("/api/v1/health", healthRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/contacts", createContactsRouter(requireAuthentication));
+app.use("/api/v1/companies", createCompaniesRouter(requireAuthentication));
 app.use("/api/v1/uploads/company-logo", createCompanyLogoRouter(requireAuthentication));
 app.use("/api/v1/uploads/avatar", createProfileAvatarRouter(requireAuthentication));
 app.use(notFoundHandler);

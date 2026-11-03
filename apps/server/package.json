@@ -10,7 +10,8 @@
     "lint": "eslint src",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "seed:dev": "tsx src/database/seed-cli.ts",
-    "migrate:contact-email-index": "tsx src/database/migrations/contact-email-index.ts"
+    "migrate:contact-email-index": "tsx src/database/migrations/contact-email-index.ts",
+    "migrate:company-name-index": "tsx src/database/migrations/company-name-index.ts"
   },
   "dependencies": {
     "@relio/shared": "workspace:*",

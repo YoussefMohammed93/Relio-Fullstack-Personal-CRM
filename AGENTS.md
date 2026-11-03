@@ -23,6 +23,10 @@ If requirements conflict, are ambiguous, or appear technically problematic, expl
 8. Update `docs/ARCHITECTURE.md` for real architectural changes, including decision, reason, alternatives when relevant, and impact.
 9. Update `docs/ROADMAP.md` only when a phase is officially completed; do not mark the next phase started without instruction.
 
+## Database Loading States
+
+Every database-backed page must display an accessible loading skeleton while its initial data is loading. Match the placeholder to the page's actual layout and controls, keep it responsive, and cover list, detail, and future database-backed views. Reuse the shared `Skeleton` component; do not leave the page blank or substitute a generic full-page spinner.
+
 ## Phase Completion
 
 A phase is complete only when all required implementation tasks and acceptance criteria are satisfied, relevant tests pass, lint and TypeScript checks pass, the production build passes when applicable, no blocking issue remains, and documentation is current. Then update Progress, Roadmap, and Architecture as needed, report the results and next milestone, and stop for the user's instruction.

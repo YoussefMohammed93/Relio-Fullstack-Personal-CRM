@@ -19,8 +19,8 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 6 — Core CRM Modules (In Progress) |
-| Next Milestone | Phase 6 — Milestone 6.2 Companies Module |
-| Last Updated | 2026-11-02 |
+| Next Milestone | Phase 6 — Milestone 6.3 Pipeline Stages Module |
+| Last Updated | 2026-11-03 |
 
 ### Status Definitions
 
@@ -1303,104 +1303,119 @@ Phase 6.1 is complete. Milestone 6.2 — Companies is the next incomplete milest
 
 ## Milestone 6.2 — Companies Module
 
+**Status:** Completed
+
 ### Backend
 
-- [ ] Implement Company create endpoint.
-- [ ] Implement Company list endpoint.
-- [ ] Implement Company details endpoint.
-- [ ] Implement Company update endpoint.
-- [ ] Implement Company delete endpoint.
-- [ ] Implement search.
-- [ ] Implement filters.
-- [ ] Implement sorting.
-- [ ] Implement pagination.
-- [ ] Implement bulk actions.
-- [ ] Implement Company statistics.
-- [ ] Implement related Contacts retrieval.
-- [ ] Implement related Deals retrieval.
-- [ ] Implement related Activities retrieval.
-- [ ] Implement logo upload integration.
+- [x] Implement Company create endpoint.
+- [x] Implement Company list endpoint.
+- [x] Implement Company details endpoint.
+- [x] Implement Company update endpoint.
+- [x] Implement Company delete endpoint.
+- [x] Implement search.
+- [x] Implement filters.
+- [x] Implement sorting.
+- [x] Implement pagination.
+- [x] Implement bulk actions.
+- [x] Implement Company statistics.
+- [x] Implement related Contacts retrieval.
+- [x] Implement related Deals retrieval.
+- [x] Implement related Activities retrieval.
+- [x] Implement logo upload integration.
 
 ### Frontend
 
-- [ ] Create Companies list page.
-- [ ] Implement table view.
-- [ ] Implement grid view.
-- [ ] Implement search.
-- [ ] Implement filters.
-- [ ] Implement sorting.
-- [ ] Implement pagination.
-- [ ] Implement row selection.
-- [ ] Implement bulk delete.
-- [ ] Implement export selected.
-- [ ] Implement Add Company side sheet.
-- [ ] Implement Edit Company side sheet.
-- [ ] Implement Delete confirmation.
-- [ ] Implement Company details page.
-- [ ] Implement Overview tab.
-- [ ] Implement Contacts tab.
-- [ ] Implement Deals tab.
-- [ ] Implement Activities tab.
-- [ ] Implement Notes through Activity records.
-- [ ] Implement loading, empty, error, and success states.
+- [x] Create Companies list page.
+- [x] Implement table view.
+- [x] Implement grid view.
+- [x] Implement search.
+- [x] Implement filters.
+- [x] Implement sorting.
+- [x] Implement pagination.
+- [x] Implement row selection.
+- [x] Implement bulk delete.
+- [x] Implement export selected.
+- [x] Implement Add Company side sheet.
+- [x] Implement Edit Company side sheet.
+- [x] Implement Delete confirmation.
+- [x] Implement Company details page.
+- [x] Implement Overview tab.
+- [x] Implement Contacts tab.
+- [x] Implement Deals tab.
+- [x] Implement Activities tab.
+- [x] Implement Notes through Activity records.
+- [x] Implement loading, empty, error, and success states.
 
 ### Company Fields & Rules
 
-- [ ] Company Name (required).
-- [ ] Website.
-- [ ] Industry.
-- [ ] Email.
-- [ ] Phone.
-- [ ] Address.
-- [ ] Description.
-- [ ] Company Size.
-- [ ] Annual Revenue (numeric USD).
-- [ ] LinkedIn URL.
-- [ ] Logo upload.
-- [ ] Generate fallback avatar using first two letters.
-- [ ] Show duplicate-name warning but allow duplicates.
-- [ ] Industry options follow the PRD.
-- [ ] Company Size options follow the PRD.
+- [x] Company Name (required).
+- [x] Website.
+- [x] Industry.
+- [x] Email.
+- [x] Phone.
+- [x] Address.
+- [x] Description.
+- [x] Company Size.
+- [x] Annual Revenue (numeric USD).
+- [x] LinkedIn URL.
+- [x] Logo upload.
+- [x] Generate fallback avatar using first two letters.
+- [x] Show duplicate-name warning but allow duplicates.
+- [x] Industry options follow the PRD.
+- [x] Company Size options follow the PRD.
 
 ### Company Statistics & List
 
-- [ ] Total Companies.
-- [ ] Total Contacts.
-- [ ] Active Deals.
-- [ ] Total Deal Value.
-- [ ] Show company logo/name.
-- [ ] Show Industry.
-- [ ] Show Size.
-- [ ] Show Contacts count.
-- [ ] Show Active Deals.
-- [ ] Show Total Deal Value.
-- [ ] Show Added date.
-- [ ] Filter by Industry.
-- [ ] Filter by Size.
-- [ ] Filter by Number of Contacts.
-- [ ] Filter by Date Added.
-- [ ] Sort by Name.
-- [ ] Sort by Recently Added.
-- [ ] Sort by Deal Value.
+- [x] Total Companies.
+- [x] Total Contacts.
+- [x] Active Deals.
+- [x] Total Deal Value.
+- [x] Show company logo/name.
+- [x] Show Industry.
+- [x] Show Size.
+- [x] Show Contacts count.
+- [x] Show Active Deals.
+- [x] Show Total Deal Value.
+- [x] Show Added date.
+- [x] Filter by Industry.
+- [x] Filter by Size.
+- [x] Filter by Number of Contacts.
+- [x] Filter by Date Added.
+- [x] Sort by Name.
+- [x] Sort by Recently Added.
+- [x] Sort by Deal Value.
 
 ### Company Details Rules
 
-- [ ] Contacts tab uses a table.
-- [ ] Add Contact from Company automatically links the Company.
-- [ ] Company Activities include related Contact and Deal activities.
-- [ ] Display source labels in aggregated timelines.
-- [ ] Notes are Activity records of type Note.
-- [ ] Avoid creating a separate Notes entity.
+- [x] Contacts tab uses a table.
+- [x] Add Contact from Company automatically links the Company.
+- [x] Company Activities include related Contact and Deal activities.
+- [x] Display source labels in aggregated timelines.
+- [x] Notes are Activity records of type Note.
+- [x] Avoid creating a separate Notes entity.
 
 ### Company Deletion Rules
 
-- [ ] Delete Company only.
-- [ ] Retain its Contacts.
-- [ ] Set their Company reference to null.
-- [ ] Retain related Deals.
-- [ ] Set their Company reference to null.
-- [ ] Preserve historical Activities.
-- [ ] Preserve Deal History.
+- [x] Delete Company only.
+- [x] Retain its Contacts.
+- [x] Set their Company reference to null.
+- [x] Retain related Deals.
+- [x] Set their Company reference to null.
+- [x] Preserve historical Activities.
+- [x] Preserve Deal History.
+
+### Milestone 6.2 Implementation Record
+
+- Added authenticated `/api/v1/companies` CRUD, stats, duplicate check, bulk delete, and related Contacts, Deals, Activities, and Notes endpoints. Zod schemas enforce the PRD industry/size options and allowlisted filters, sorting, date/contact-count ranges, pagination, and request fields. All reads and mutations are owner-scoped.
+- Company statistics and list rows include contact counts and open-deal counts/value. Company activity timelines aggregate direct Company, linked Contact, and linked Deal Activities once per Activity, with a source label. Company Notes are stored as `Activity` records of type `note`; no Notes collection was added.
+- Company deletion and bulk deletion use a single transaction, validate all selected Companies before mutation, unlink but retain Contacts and Deals, and leave Activities and DealHistory unchanged. Logo selection uses the existing authenticated Cloudinary upload route and JPEG/PNG/WebP/5 MiB validation.
+- Fixed the client logo upload to send the `logo` multipart field expected by Multer; added an HTTP parser regression test for the accepted `logo` field and the rejected `file` field. Existing development records with display-label industries/company sizes are normalized for API output and remain discoverable by canonical filters. The development seed now writes canonical enum values.
+- Replaced the Company `{ owner, name }` unique index with a non-unique index so the PRD's duplicate-name warning can allow creation. Added `pnpm --filter @relio/server migrate:company-name-index`; the development-only migration was applied to the configured development database.
+- Added the Companies table/grid, filters, sorting, pagination, statistics, row selection, selected CSV export, Add/Edit side sheet, duplicate warning, and Company profile tabs. Company-created Contacts are linked to the current Company. AppShell no longer adds a second generic heading to Companies list/profile routes.
+- Validation: Companies MongoDB HTTP integration — 1/1 passed, including legacy label filtering/projection; logo multipart regression — 2/2 passed. Full server test set — 40 passed, 3 opt-in integration suites skipped, 0 failed. Workspace `pnpm lint` — 0 errors and 13 existing warnings; `pnpm typecheck`, `pnpm build`, and `pnpm format:check` — passed.
+- Browser verification: Company create, profile, pre-linked Contact creation, Notes creation and source labeling, and one-heading behavior passed. List and profile had no horizontal overflow at 320px, 375px, or 1440px. The temporary QA account and its records were deleted through Settings after verification.
+- External Cloudinary delivery was not tested against provider credentials. Deal detail navigation remains for Milestone 6.4; no Deal module was started here.
+- The Companies UI requires a valid authenticated session and only returns records whose `owner` matches that session. The provided sample Company document has owner `6ae77c4518cd6514cddaccfa`, while the provided User document ID is `6ae88b9c9662688d669fba05`; these IDs do not match. No owner reassignment was performed. Confirm the intended owner before changing stored records.
 
 ## Milestone 6.3 — Pipeline Stages Module
 
@@ -2198,6 +2213,6 @@ Do not update documents with fictional or unverified implementation status.
 
 **Current Phase:** Phase 6 — Core CRM Modules (In Progress).
 
-**Next Milestone:** Milestone 6.2 — Companies Module.
+**Next Milestone:** Milestone 6.3 — Pipeline Stages Module.
 
-Milestone 6.1 — Contacts is complete and verified. Continue with Companies only; do not begin later Phase 6 milestones automatically. Phase 5 remains In Progress for provider-backed Google/SMTP verification and authorization coverage in the remaining CRM modules.
+Milestones 6.1 — Contacts and 6.2 — Companies are complete and verified. Continue with Pipeline Stages only; do not begin later Phase 6 milestones automatically. Phase 5 remains In Progress for provider-backed Google/SMTP verification and authorization coverage in the remaining CRM modules.

@@ -110,7 +110,7 @@ const companySchema = new Schema<ICompany>(
   { timestamps: true },
 );
 
-companySchema.index({ owner: 1, name: 1 }, { unique: true });
+companySchema.index({ owner: 1, name: 1 });
 companySchema.index({ owner: 1, industry: 1 });
 
 export const Company: Model<ICompany> = mongoose.model<ICompany>(

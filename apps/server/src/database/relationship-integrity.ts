@@ -304,21 +304,30 @@ export function createRelationshipIntegrityService(
       ownerId: mongoose.Types.ObjectId,
       companyId: mongoose.Types.ObjectId,
     ) {
+      await this.deleteCompanies(ownerId, [companyId]);
+    },
+
+    async deleteCompanies(
+      ownerId: mongoose.Types.ObjectId,
+      companyIds: readonly mongoose.Types.ObjectId[],
+    ) {
       await store.withTransaction(async (session) => {
         await assertOwnedReferences(
           ownerId,
-          [{ type: "Company", id: companyId }],
+          companyIds.map((id) => ({ type: "Company" as const, id })),
           session,
         );
-        await store.apply(
-          { type: "unlink_company_from_contacts", ownerId, companyId },
-          session,
-        );
-        await store.apply(
-          { type: "unlink_company_from_deals", ownerId, companyId },
-          session,
-        );
-        await store.apply({ type: "delete_company", ownerId, companyId }, session);
+        for (const companyId of companyIds) {
+          await store.apply(
+            { type: "unlink_company_from_contacts", ownerId, companyId },
+            session,
+          );
+          await store.apply(
+            { type: "unlink_company_from_deals", ownerId, companyId },
+            session,
+          );
+          await store.apply({ type: "delete_company", ownerId, companyId }, session);
+        }
       });
     },
 

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
+import { getOverlayPortalTarget } from "./modal";
 import {
   enterStyle,
   themeVars,
@@ -130,7 +131,7 @@ export function Popover({
           >
             {typeof children === "function" ? children({ close }) : children}
           </div>,
-          document.body,
+          getOverlayPortalTarget(anchor.current),
         )}
     </>
   );

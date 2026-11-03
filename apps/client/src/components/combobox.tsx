@@ -3,6 +3,7 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { EASE, fly, play, snapshot, textRect, type Snapshot } from "./combobox-motion";
+import { getOverlayPortalTarget } from "./modal";
 import { NumberRoll } from "./number-roll";
 import { StatusButton } from "./status-button";
 import { TextMorph } from "./text-morph";
@@ -1583,7 +1584,7 @@ export function Combobox(props: ComboboxProps) {
             </div>
           )}
         </div>,
-        document.body,
+        getOverlayPortalTarget(anchorRef.current),
       )
     : null;
 

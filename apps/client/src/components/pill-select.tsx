@@ -3,6 +3,7 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { TextMorph } from "./text-morph";
+import { getOverlayPortalTarget } from "./modal";
 
 /* ─────────────────────────────────────────────────────────
  * PILL SELECT: a select that's the same surface as its pill
@@ -556,7 +557,7 @@ export function PillSelect({
               </div>
             </div>
           </div>,
-          document.body,
+          getOverlayPortalTarget(wrapRef.current),
         )}
     </div>
   );

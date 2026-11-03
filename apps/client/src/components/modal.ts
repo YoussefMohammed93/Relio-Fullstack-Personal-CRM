@@ -106,3 +106,7 @@ export const MODAL_ROOT =
 /** The dim behind the surface: the page fades back under a veil of the background colour, no blur. */
 export const SCRIM =
   "absolute inset-0 bg-[color-mix(in_oklab,var(--background)_62%,transparent)]";
+
+export function getOverlayPortalTarget(anchor: Element | null): HTMLElement {
+  return anchor?.closest<HTMLElement>("dialog[open]") ?? document.body;
+}

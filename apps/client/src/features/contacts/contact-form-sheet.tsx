@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Building2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/button";
 import { Combobox, type ComboboxOption } from "@/components/combobox";
@@ -28,8 +29,11 @@ const emptyValues: ContactFormValues = {
   notes: "",
 };
 
-function contactToValues(contact?: Contact | null): ContactFormValues {
-  if (!contact) return emptyValues;
+function contactToValues(
+  contact?: Contact | null,
+  defaultCompany?: { id: string; name: string } | null,
+): ContactFormValues {
+  if (!contact) return { ...emptyValues, company: defaultCompany?.id ?? null };
   return {
     firstName: contact.firstName,
     lastName: contact.lastName,
@@ -47,18 +51,24 @@ function contactToValues(contact?: Contact | null): ContactFormValues {
 export function ContactFormSheet({
   open,
   contact,
+  defaultCompany,
+  companyLocked = false,
   onOpenChange,
   onSave,
 }: {
   open: boolean;
   contact?: Contact | null;
+  defaultCompany?: { id: string; name: string } | null;
+  companyLocked?: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (input: ContactInput) => Promise<void>;
 }) {
   const [selectedCompany, setSelectedCompany] = useState<ComboboxOption | null>(
     contact?.company
       ? { value: contact.company.id, label: contact.company.name }
-      : null,
+      : defaultCompany
+        ? { value: defaultCompany.id, label: defaultCompany.name }
+        : null,
   );
   const [saveError, setSaveError] = useState("");
   const {
@@ -69,20 +79,22 @@ export function ContactFormSheet({
     formState: { errors, isSubmitting },
   } = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
-    defaultValues: contactToValues(contact),
+    defaultValues: contactToValues(contact, defaultCompany),
   });
 
   useEffect(() => {
     if (open) {
-      reset(contactToValues(contact));
+      reset(contactToValues(contact, defaultCompany));
       setSelectedCompany(
         contact?.company
           ? { value: contact.company.id, label: contact.company.name }
-          : null,
+          : defaultCompany
+            ? { value: defaultCompany.id, label: defaultCompany.name }
+            : null,
       );
       setSaveError("");
     }
-  }, [contact, open, reset]);
+  }, [contact, defaultCompany, open, reset]);
 
   const submit = handleSubmit(async (values) => {
     setSaveError("");
@@ -92,7 +104,7 @@ export function ContactFormSheet({
         ...(values.email ? { email: values.email } : { email: "" }),
         company: values.company,
       });
-      reset(contactToValues(contact));
+      reset(contactToValues(contact, defaultCompany));
       onOpenChange(false);
     } catch (error) {
       setSaveError(
@@ -111,7 +123,9 @@ export function ContactFormSheet({
           setSelectedCompany(
             contact?.company
               ? { value: contact.company.id, label: contact.company.name }
-              : null,
+              : defaultCompany
+                ? { value: defaultCompany.id, label: defaultCompany.name }
+                : null,
           );
         }
         onOpenChange(next);
@@ -196,25 +210,44 @@ export function ContactFormSheet({
           name="company"
           render={({ field }) => (
             <div className="space-y-1.5">
-              <Combobox
-                label="Company"
-                placeholder="Search your companies"
-                searchPlaceholder="Search companies"
-                emptyMessage={() => "No matching companies"}
-                clearable
-                value={selectedCompany}
-                onValueChange={(option) => {
-                  setSelectedCompany(option);
-                  field.onChange(option?.value ?? null);
-                }}
-                search={async (query, { signal }) => {
-                  const options = await contactsApi.companyOptions(query, signal);
-                  return options.map((option) => ({
-                    value: option.id,
-                    label: option.name,
-                  }));
-                }}
-              />
+              {companyLocked && defaultCompany ? (
+                <div>
+                  <span className="mb-1.5 block text-xs font-medium text-foreground">
+                    Company
+                  </span>
+                  <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-muted/40 px-3 text-sm">
+                    <Building2
+                      aria-hidden="true"
+                      className="size-4 text-muted-foreground"
+                    />
+                    <span className="truncate">{defaultCompany.name}</span>
+                  </div>
+                </div>
+              ) : (
+                <Combobox
+                  label="Company"
+                  placeholder="Search your companies"
+                  searchPlaceholder="Search companies"
+                  emptyMessage={(query) =>
+                    query
+                      ? "No matching companies"
+                      : "No companies yet. Add a company first."
+                  }
+                  clearable
+                  value={selectedCompany}
+                  onValueChange={(option) => {
+                    setSelectedCompany(option);
+                    field.onChange(option?.value ?? null);
+                  }}
+                  search={async (query, { signal }) => {
+                    const options = await contactsApi.companyOptions(query, signal);
+                    return options.map((option) => ({
+                      value: option.id,
+                      label: option.name,
+                    }));
+                  }}
+                />
+              )}
             </div>
           )}
         />

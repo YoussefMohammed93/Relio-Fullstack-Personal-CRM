@@ -105,6 +105,18 @@ it(
       assert.equal(companyOptions.status, 200);
       assert.deepEqual(((await companyOptions.json()) as { data: unknown[] }).data, []);
 
+      const ownerCompanyOptions = await request(
+        baseUrl,
+        "/contacts/company-options",
+        ownerCookie,
+      );
+      assert.equal(ownerCompanyOptions.status, 200);
+      assert.deepEqual(
+        ((await ownerCompanyOptions.json()) as { data: { id: string; name: string }[] })
+          .data,
+        [{ id: String(ownerCompany._id), name: ownerCompany.name }],
+      );
+
       const createResponse = await request(baseUrl, "/contacts", ownerCookie, {
         method: "POST",
         body: {

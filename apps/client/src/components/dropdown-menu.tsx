@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
+import { getOverlayPortalTarget } from "./modal";
 import {
   enterStyle,
   themeVars,
@@ -135,7 +136,7 @@ export function DropdownMenu({
               onClose={() => setOpen(false, true)}
             />
           </div>,
-          document.body,
+          getOverlayPortalTarget(anchor.current),
         )}
     </>
   );
