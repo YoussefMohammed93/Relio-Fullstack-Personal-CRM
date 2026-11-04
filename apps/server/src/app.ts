@@ -18,6 +18,7 @@ import { createContactsRouter } from "./modules/contacts/contacts.routes.js";
 import { createCompaniesRouter } from "./modules/companies/companies.routes.js";
 import { createPipelineStagesRouter } from "./modules/pipeline-stages/pipeline-stages.routes.js";
 import { createDealsRouter } from "./modules/deals/deals.routes.js";
+import { createTasksRouter } from "./modules/tasks/tasks.routes.js";
 
 const corsOrigins = env.CLIENT_ORIGIN.split(",")
   .map((origin) => origin.trim())
@@ -64,6 +65,7 @@ app.use("/api/v1/contacts", createContactsRouter(requireAuthentication));
 app.use("/api/v1/companies", createCompaniesRouter(requireAuthentication));
 app.use("/api/v1/pipeline-stages", createPipelineStagesRouter(requireAuthentication));
 app.use("/api/v1/deals", createDealsRouter(requireAuthentication));
+app.use("/api/v1/tasks", createTasksRouter(requireAuthentication));
 app.use("/api/v1/uploads/company-logo", createCompanyLogoRouter(requireAuthentication));
 app.use("/api/v1/uploads/avatar", createProfileAvatarRouter(requireAuthentication));
 app.use(notFoundHandler);

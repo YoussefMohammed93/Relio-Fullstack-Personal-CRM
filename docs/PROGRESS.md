@@ -19,8 +19,8 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 6 — Core CRM Modules (In Progress) |
-| Next Milestone | Phase 6 — Milestone 6.4 Deals Module |
-| Last Updated | 2026-11-03 |
+| Next Milestone | Phase 6 — Milestone 6.6 Activities |
+| Last Updated | 2026-11-04 |
 
 ### Status Definitions
 
@@ -1463,175 +1463,199 @@ Phase 6.1 is complete. Milestone 6.2 — Companies is the next incomplete milest
 
 ## Milestone 6.4 — Deals Module
 
+**Status:** Completed
+
 ### Backend
 
-- [ ] Implement Deal creation.
-- [ ] Implement Deal listing.
-- [ ] Implement Deal details.
-- [ ] Implement Deal update.
-- [ ] Implement Deal deletion.
-- [ ] Implement Deal search.
-- [ ] Implement filters.
-- [ ] Implement sorting.
-- [ ] Implement pagination.
-- [ ] Implement bulk actions.
-- [ ] Implement Deal statistics.
-- [ ] Implement stage changes.
-- [ ] Implement Won transition.
-- [ ] Implement Lost transition.
-- [ ] Implement reopening.
-- [ ] Implement Deal History creation.
-- [ ] Implement Deal timeline retrieval.
-- [ ] Implement related Tasks retrieval.
-- [ ] Enforce ownership.
+- [x] Implement Deal creation.
+- [x] Implement Deal listing.
+- [x] Implement Deal details.
+- [x] Implement Deal update.
+- [x] Implement Deal deletion.
+- [x] Implement Deal search.
+- [x] Implement filters.
+- [x] Implement sorting.
+- [x] Implement pagination.
+- [x] Implement bulk actions.
+- [x] Implement Deal statistics.
+- [x] Implement stage changes.
+- [x] Implement Won transition.
+- [x] Implement Lost transition.
+- [x] Implement reopening.
+- [x] Implement Deal History creation.
+- [x] Implement Deal timeline retrieval.
+- [x] Implement related Tasks retrieval.
+- [x] Enforce ownership.
 
 ### Frontend — Deal Views
 
-- [ ] Create Deals page.
-- [ ] Implement Kanban view.
-- [ ] Implement Table view.
-- [ ] Implement view toggle.
-- [ ] Implement drag-and-drop between stages.
-- [ ] Implement stage headers.
-- [ ] Show Deal count per stage.
-- [ ] Show total value per stage.
-- [ ] Implement add Deal action per stage.
-- [ ] Implement Deal cards.
-- [ ] Implement search.
-- [ ] Implement filters.
-- [ ] Implement sorting.
-- [ ] Implement pagination where appropriate.
-- [ ] Implement row selection.
-- [ ] Implement bulk Delete Selected.
-- [ ] Implement bulk Change Stage.
-- [ ] Implement bulk Export Selected.
+- [x] Create Deals page.
+- [x] Implement Kanban view.
+- [x] Implement Table view.
+- [x] Implement view toggle.
+- [x] Implement drag-and-drop between stages.
+- [x] Implement stage headers.
+- [x] Show Deal count per stage.
+- [x] Show total value per stage.
+- [x] Implement add Deal action per stage.
+- [x] Implement Deal cards.
+- [x] Implement search.
+- [x] Implement filters.
+- [x] Implement sorting.
+- [x] Implement pagination where appropriate.
+- [x] Implement row selection.
+- [x] Implement bulk Delete Selected.
+- [x] Implement bulk Change Stage.
+- [x] Implement bulk Export Selected.
 
 ### Deal Cards
 
-- [ ] Deal Name.
-- [ ] Contact Name.
-- [ ] Company.
-- [ ] Deal Value.
-- [ ] Probability.
-- [ ] Expected Closing Date.
+- [x] Deal Name.
+- [x] Contact Name.
+- [x] Company.
+- [x] Deal Value.
+- [x] Probability.
+- [x] Expected Closing Date.
 
 ### Deal Statistics
 
-- [ ] Total Deals.
-- [ ] Active Deals.
-- [ ] Pipeline Value.
-- [ ] Won Revenue.
-- [ ] Lost Deals.
+- [x] Total Deals.
+- [x] Active Deals.
+- [x] Pipeline Value.
+- [x] Won Revenue.
+- [x] Lost Deals.
 
 ### Deal Fields & Forms
 
-- [ ] Deal Name (required).
-- [ ] Deal Value (required and greater than zero).
-- [ ] Primary Contact (required on creation).
-- [ ] Company (optional).
-- [ ] Pipeline Stage (required).
-- [ ] Probability (optional, default based on stage).
-- [ ] Allow manual probability override.
-- [ ] Expected Closing Date (optional).
-- [ ] Description (optional).
-- [ ] Implement searchable Contact Select.
-- [ ] Support Add Contact from Contact Select.
-- [ ] Auto-populate Company from selected Contact.
-- [ ] Allow user to change the selected Company.
-- [ ] Allow Deal Company to differ from Contact Company.
+- [x] Deal Name (required).
+- [x] Deal Value (required and greater than zero).
+- [x] Primary Contact (required on creation).
+- [x] Company (optional).
+- [x] Pipeline Stage (required).
+- [x] Probability (optional, default based on stage).
+- [x] Allow manual probability override.
+- [x] Expected Closing Date (optional).
+- [x] Description (optional).
+- [x] Implement searchable Contact Select.
+- [x] Support Add Contact from Contact Select.
+- [x] Auto-populate Company from selected Contact.
+- [x] Allow user to change the selected Company.
+- [x] Allow Deal Company to differ from Contact Company.
 
 ### Deal Details
 
-- [ ] Create Deal details page.
-- [ ] Show Overview.
-- [ ] Show Primary Contact.
-- [ ] Show Company.
-- [ ] Show Value and Probability.
-- [ ] Show Stage.
-- [ ] Show Expected Closing Date.
-- [ ] Show Description.
-- [ ] Show Timeline.
-- [ ] Show Related Tasks.
-- [ ] Show Deal History.
-- [ ] Include Deal activities in timeline.
-- [ ] Include Primary Contact activities in timeline.
-- [ ] Display source labels.
+- [x] Create Deal details page.
+- [x] Show Overview.
+- [x] Show Primary Contact.
+- [x] Show Company.
+- [x] Show Value and Probability.
+- [x] Show Stage.
+- [x] Show Expected Closing Date.
+- [x] Show Description.
+- [x] Show Timeline.
+- [x] Show Related Tasks.
+- [x] Show Deal History.
+- [x] Include Deal activities in timeline.
+- [x] Include Primary Contact activities in timeline.
+- [x] Display source labels.
 
 ### Deal Status & History Rules
 
-- [ ] Record Deal creation in history.
-- [ ] Record stage changes.
-- [ ] Record value updates.
-- [ ] Record Won transition.
-- [ ] Record Lost transition.
-- [ ] Record reopening.
-- [ ] Confirm before marking Won.
-- [ ] Confirm before marking Lost.
-- [ ] Lost Reason is optional.
-- [ ] Lost Reason options follow the PRD.
-- [ ] Won records Actual Closing Date.
-- [ ] Won records Final Deal Value.
-- [ ] Lost records Lost Date.
-- [ ] Closed Won value cannot be edited unless reopened.
-- [ ] Reopening returns to the last ordinary stage.
-- [ ] Preserve Deal History if Contact is deleted.
-- [ ] Preserve Deal if Company is deleted.
+- [x] Record Deal creation in history.
+- [x] Record stage changes.
+- [x] Record value updates.
+- [x] Record Won transition.
+- [x] Record Lost transition.
+- [x] Record reopening.
+- [x] Confirm before marking Won.
+- [x] Confirm before marking Lost.
+- [x] Lost Reason is optional.
+- [x] Lost Reason options follow the PRD.
+- [x] Won records Actual Closing Date.
+- [x] Won records Final Deal Value.
+- [x] Lost records Lost Date.
+- [x] Closed Won value cannot be edited unless reopened.
+- [x] Reopening returns to the last ordinary stage.
+- [x] Preserve Deal History if Contact is deleted.
+- [x] Preserve Deal if Company is deleted.
+
+### Milestone 6.4 Implementation Record
+
+- Added the authenticated `/api/v1/deals` module with owner-scoped CRUD, search, filters, sorting, pagination, stats, bulk-stage updates, reopen/win/lose transitions, task/activity aggregation, and Deal History tracking. The server enforces the PRD deal lifecycle and rejects foreign owner references.
+- Implemented the client `DealsPage`, Kanban/table views, Deal cards, filters, statistics, stage controls, CSV export, add/edit sheet, and deal detail page with overview/history/timeline/task views.
+- Reused the pipeline-stage defaults and probability logic to keep `New`, `Qualified`, `Proposal`, and custom stages aligned with the configured business rules while preserving manual override behavior.
+- Validation: `RELIO_DEALS_INTEGRATION=1 pnpm --filter @relio/server exec node --import tsx --test src/modules/deals/deals.schemas.test.ts src/modules/deals/deals.integration.test.ts` — 5 tests passed, 0 failed.
+- The milestone is complete and the next incomplete item in Phase 6 is Milestone 6.5 — Tasks & Follow-ups.
 
 ## Milestone 6.5 — Tasks & Follow-ups Module
 
+**Status:** Completed
+
 ### Backend
 
-- [ ] Implement Task creation.
-- [ ] Implement Task listing.
-- [ ] Implement Task details.
-- [ ] Implement Task update.
-- [ ] Implement Task deletion.
-- [ ] Implement Task status changes.
-- [ ] Implement Task completion timestamp.
-- [ ] Implement Task filters.
-- [ ] Implement Task sorting.
-- [ ] Implement Task pagination.
-- [ ] Implement bulk actions.
-- [ ] Implement related entity validation.
-- [ ] Implement reminder scheduling support.
-- [ ] Enforce ownership.
+- [x] Implement Task creation.
+- [x] Implement Task listing.
+- [x] Implement Task details.
+- [x] Implement Task update.
+- [x] Implement Task deletion.
+- [x] Implement Task status changes.
+- [x] Implement Task completion timestamp.
+- [x] Implement Task filters.
+- [x] Implement Task sorting.
+- [x] Implement Task pagination.
+- [x] Implement bulk actions.
+- [x] Implement related entity validation.
+- [x] Implement reminder scheduling support.
+- [x] Enforce ownership.
 
 ### Frontend
 
-- [ ] Create Tasks page.
-- [ ] Implement task list/table.
-- [ ] Implement status filters.
-- [ ] Implement priority filters.
-- [ ] Implement type filters.
-- [ ] Implement due-date filters.
-- [ ] Implement related entity filters.
-- [ ] Implement sorting.
-- [ ] Implement bulk Complete.
-- [ ] Implement bulk Delete.
-- [ ] Implement bulk Change Priority.
-- [ ] Implement Add Task form.
-- [ ] Implement Edit Task form.
-- [ ] Implement Task Details side sheet.
-- [ ] Implement completion action.
-- [ ] Implement overdue styling.
-- [ ] Implement loading, empty, error, and success states.
+- [x] Create Tasks page.
+- [x] Implement task list/table.
+- [x] Implement status filters.
+- [x] Implement priority filters.
+- [x] Implement type filters.
+- [x] Implement due-date filters.
+- [x] Implement related entity filters.
+- [x] Implement sorting.
+- [x] Implement bulk Complete.
+- [x] Implement bulk Delete.
+- [x] Implement bulk Change Priority.
+- [x] Implement Add Task form.
+- [x] Implement Edit Task form.
+- [x] Implement Task Details side sheet.
+- [x] Implement completion action.
+- [x] Implement overdue styling.
+- [x] Implement loading, empty, error, and success states.
+- [x] Implement a draggable status board with persisted moves.
 
 ### Task Fields & Rules
 
-- [ ] Title.
-- [ ] Description.
-- [ ] Type: Task or Follow-up.
-- [ ] Status: To Do, In Progress, Completed, Cancelled.
-- [ ] Priority: Low, Medium, High.
-- [ ] Optional Due Date.
-- [ ] Optional Due Time.
-- [ ] Optional related Contact, Deal, or Company.
-- [ ] A Task can relate to only one entity.
-- [ ] Reminder one day before Due Date.
-- [ ] No reminder without Due Date.
-- [ ] Record completion timestamp.
-- [ ] Recurring Tasks remain deferred.
-- [ ] Calls and Meetings are Activities, not Task types.
+- [x] Title.
+- [x] Description.
+- [x] Type: Task or Follow-up.
+- [x] Status: To Do, In Progress, Completed, Cancelled.
+- [x] Priority: Low, Medium, High.
+- [x] Optional Due Date.
+- [x] Optional Due Time.
+- [x] Optional related Contact, Deal, or Company.
+- [x] A Task can relate to only one entity.
+- [x] Reminder one day before Due Date.
+- [x] No reminder without Due Date.
+- [x] Record completion timestamp.
+- [x] Recurring Tasks remain deferred.
+- [x] Calls and Meetings are Activities, not Task types.
+
+### Milestone 6.5 Implementation Record
+
+- Added the authenticated `/api/v1/tasks` module with owner-scoped create/list/detail/update/delete, search, validated filters, sorting, pagination, and bulk delete/complete/priority operations. Related Contact, Company, and Deal references are checked against the acting owner.
+- Task writes use Mongoose document validation so reminder timestamps remain one day before the due date, no-date tasks have no reminder, and completion timestamps are set or cleared with status changes.
+- Added the Tasks page with list and draggable Kanban views, status/priority/type/due-date/related-type filters, sorting and pagination, bulk actions, Add/Edit forms, a details side sheet, overdue indication, and loading/empty/error/success states. The status board reuses the shared `KanbanBoard` pointer, touch, keyboard, and failed-save rollback behavior.
+- Validation: Task schema tests and MongoDB HTTP integration passed; the integration covered owner isolation, related-reference validation, reminders, completion timestamps, filters, sorting, pagination, bulk actions, and deletion. The complete server suite reported 48 passed, 6 optional integration suites skipped, and 0 failed. Workspace lint passed with 0 errors and 17 existing warnings; workspace typecheck and production build passed. Targeted Prettier check passed.
+- Browser verification: created a temporary task, dragged it from To Do to In Progress, reloaded to confirm the persisted status, then deleted the temporary account and its records through Account Settings.
+- Workspace `pnpm format:check` still reports six unrelated existing formatting differences in the client color-picker files and pipeline-stage module; those files were left unchanged. Notification delivery remains Phase 7 work, and recurring tasks remain deferred.
+
+Milestone 6.5 is complete. Milestone 6.6 — Activities is the next incomplete milestone in Phase 6.
 
 ## Milestone 6.6 — Activities Module
 

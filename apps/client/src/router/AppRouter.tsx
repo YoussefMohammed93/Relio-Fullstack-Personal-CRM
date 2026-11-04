@@ -17,6 +17,7 @@ import { CompanyDetailsPage } from "@/features/companies/company-details-page";
 import { CompaniesPage } from "@/features/companies/companies-page";
 import { DealDetailsPage } from "@/features/deals/deal-details-page";
 import { DealsPage } from "@/features/deals/deals-page";
+import { TasksPage } from "@/features/tasks/tasks-page";
 import {
   NotFoundPage,
   PublicHome,
@@ -68,7 +69,7 @@ const router = createBrowserRouter([
       { path: "deals", element: <DealsPage /> },
       {
         path: "tasks",
-        element: <RoutePlaceholder message="Task management is not implemented yet." />,
+        element: <TasksPage />,
       },
       {
         path: "calendar",

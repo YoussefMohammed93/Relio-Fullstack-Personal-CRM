@@ -100,5 +100,8 @@ taskSchema.pre("validate", function () {
 
 taskSchema.index({ owner: 1, dueDate: 1 });
 taskSchema.index({ owner: 1, status: 1 });
+taskSchema.index({ owner: 1, priority: 1 });
+taskSchema.index({ owner: 1, type: 1 });
+taskSchema.index({ owner: 1, relatedEntityType: 1, relatedEntityId: 1 });
 
 export const Task: Model<ITask> = mongoose.model<ITask>("Task", taskSchema);

@@ -73,6 +73,8 @@ export function AppShell() {
     location.pathname.startsWith("/app/companies/");
   const isDealsRoute =
     location.pathname === "/app/deals" || location.pathname.startsWith("/app/deals/");
+  const isTasksRoute =
+    location.pathname === "/app/tasks" || location.pathname.startsWith("/app/tasks/");
   const pageTitle =
     pageTitles.get(location.pathname) ??
     [...pageTitles.entries()]
@@ -371,7 +373,7 @@ export function AppShell() {
 
         <main className="w-full flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-screen-2xl">
-            {!isContactsRoute && !isCompaniesRoute && !isDealsRoute ? (
+            {!isContactsRoute && !isCompaniesRoute && !isDealsRoute && !isTasksRoute ? (
               <PageHeader title={pageTitle} description="Your freelance workspace" />
             ) : null}
             <Outlet />
