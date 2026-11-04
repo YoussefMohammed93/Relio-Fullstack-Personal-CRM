@@ -92,6 +92,10 @@ export interface RelationshipIntegrityStore {
     stageId: mongoose.Types.ObjectId,
     session: ClientSession,
   ): Promise<number>;
+  countPipelineStages(
+    ownerId: mongoose.Types.ObjectId,
+    session: ClientSession,
+  ): Promise<number>;
   apply(mutation: IntegrityMutation, session: ClientSession): Promise<void>;
 }
 
@@ -242,6 +246,9 @@ const mongooseStore: RelationshipIntegrityStore = {
       $or: [{ pipelineStage: stageId }, { previousStage: stageId }],
     }).session(session);
   },
+  async countPipelineStages(ownerId, session) {
+    return PipelineStage.countDocuments({ owner: ownerId }).session(session);
+  },
   apply: applyMongooseMutation,
 };
 
@@ -337,6 +344,10 @@ export function createRelationshipIntegrityService(
       replacementStageId?: mongoose.Types.ObjectId,
     ) {
       await store.withTransaction(async (session) => {
+        if ((await store.countPipelineStages(ownerId, session)) <= 1) {
+          throw new ValidationError("At least one pipeline stage must remain");
+        }
+
         await assertOwnedReferences(
           ownerId,
           [{ type: "PipelineStage", id: stageId }],

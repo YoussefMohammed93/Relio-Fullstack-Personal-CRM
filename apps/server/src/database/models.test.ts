@@ -539,6 +539,7 @@ describe("Relio database models", () => {
         ownerId.equals(owner) && validIds.has(recordId.toString()),
       countStageReferences: async (ownerId, referencedStageId) =>
         ownerId.equals(owner) && referencedStageId.equals(stageId) ? 1 : 0,
+      countPipelineStages: async () => 2,
       apply: async (mutation) => {
         mutations.push(mutation);
       },

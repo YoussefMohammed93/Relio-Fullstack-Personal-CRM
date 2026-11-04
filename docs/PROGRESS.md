@@ -19,7 +19,7 @@
 | Product | Personal CRM for Freelancers |
 | Overall Status | In Progress |
 | Current Phase | Phase 6 — Core CRM Modules (In Progress) |
-| Next Milestone | Phase 6 — Milestone 6.3 Pipeline Stages Module |
+| Next Milestone | Phase 6 — Milestone 6.4 Deals Module |
 | Last Updated | 2026-11-03 |
 
 ### Status Definitions
@@ -1419,37 +1419,47 @@ Phase 6.1 is complete. Milestone 6.2 — Companies is the next incomplete milest
 
 ## Milestone 6.3 — Pipeline Stages Module
 
+**Status:** Completed
+
 ### Backend
 
-- [ ] Create default stages.
-- [ ] Implement stage listing.
-- [ ] Implement stage creation.
-- [ ] Implement stage renaming.
-- [ ] Implement stage reordering.
-- [ ] Implement stage color updates.
-- [ ] Implement stage deletion.
-- [ ] Require replacement stage when deleting a stage with Deals.
-- [ ] Reassign affected Deals before deletion.
-- [ ] Prevent deletion without valid reassignment.
-- [ ] Enforce ownership.
+- [x] Create default stages.
+- [x] Implement stage listing.
+- [x] Implement stage creation.
+- [x] Implement stage renaming.
+- [x] Implement stage reordering.
+- [x] Implement stage color updates.
+- [x] Implement stage deletion.
+- [x] Require replacement stage when deleting a stage with Deals.
+- [x] Reassign affected Deals before deletion.
+- [x] Prevent deletion without valid reassignment.
+- [x] Enforce ownership.
 
 ### Frontend
 
-- [ ] Implement pipeline stage settings.
-- [ ] Implement add stage.
-- [ ] Implement rename stage.
-- [ ] Implement reorder stages.
-- [ ] Implement color selection.
-- [ ] Implement delete stage confirmation.
-- [ ] Implement replacement-stage selection.
-- [ ] Display default stages.
+- [x] Implement pipeline stage settings.
+- [x] Implement add stage.
+- [x] Implement rename stage.
+- [x] Implement reorder stages.
+- [x] Implement color selection.
+- [x] Implement delete stage confirmation.
+- [x] Implement replacement-stage selection.
+- [x] Display default stages.
 
 ### Stage Rules
 
-- [ ] Default stages: New, Qualified, Proposal, Negotiation.
-- [ ] Won and Lost are terminal statuses, not ordinary stages.
-- [ ] Users can add, rename, reorder, recolor, and delete ordinary stages.
-- [ ] Deleting a stage with Deals requires reassignment.
+- [x] Default stages: New, Qualified, Proposal, Negotiation.
+- [x] Won and Lost are terminal statuses, not ordinary stages.
+- [x] Users can add, rename, reorder, recolor, and delete ordinary stages.
+- [x] Deleting a stage with Deals requires reassignment.
+
+### Milestone 6.3 Implementation Record
+
+- Added the authenticated `/api/v1/pipeline-stages` module with owner-scoped list/create/update/delete/reorder endpoints and Zod validation for ids, names, colors, and reorder payloads.
+- Ensured default pipeline stages seed for owners with no entries and enforce one-stage minimums during deletion.
+- Reused the transaction-backed `relationshipIntegrity.deletePipelineStage` guard so deal reassignment is atomic and cross-owner stage writes are rejected.
+- Added the Pipeline tab in Account Settings, including add-stage, rename, color editing, reorder controls, loading skeletons, and replacement-stage deletion confirmation.
+- Validation: `RELIO_PIPELINE_STAGES_INTEGRATION=1 pnpm --filter @relio/server exec node --import tsx --test src/modules/pipeline-stages/pipeline-stages.integration.test.ts` — 1/1 passed; `pnpm --filter @relio/client typecheck` — passed; `pnpm lint` — 0 errors, 14 existing warnings; `pnpm build` — passed.
 
 ## Milestone 6.4 — Deals Module
 

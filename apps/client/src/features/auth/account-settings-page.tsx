@@ -1,19 +1,22 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Avatar } from "@/components/avatar";
 import { Button } from "@/components/button";
+import { ColorPicker } from "@/components/color-picker";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { Input } from "@/components/input";
+import { Skeleton, SkeletonSwap } from "@/components/skeleton";
 import { Switch } from "@/components/switch";
 import { Tabs } from "@/components/tabs";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { authApi, type ProfileInput } from "@/features/auth/auth.api";
 import { useAuth } from "@/features/auth/auth-state";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ImagePlus, Trash2 } from "lucide-react";
 import { useNotifications } from "@/providers/notification-provider";
+import { ArrowDown, ArrowUp, ImagePlus, Plus, Trash2 } from "lucide-react";
 
 const profileSchema = z.object({
   username: z.string().trim().min(3, "Use at least 3 characters.").max(50),
@@ -519,11 +522,464 @@ function PreferencesSettings() {
   );
 }
 
+interface PipelineStage {
+  id: string;
+  name: string;
+  color: string;
+  order: number;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiEnvelope<T> {
+  success: boolean;
+  data: T | null;
+  error: { message: string } | null;
+}
+
+class PipelineStageApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "PipelineStageApiError";
+  }
+}
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api/v1";
+
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    ...init,
+    credentials: "include",
+    headers: {
+      ...(init.body && !(init.body instanceof FormData)
+        ? { "content-type": "application/json" }
+        : {}),
+      ...init.headers,
+    },
+  });
+  const envelope = (await response.json()) as ApiEnvelope<T>;
+
+  if (!response.ok || !envelope.success || envelope.data === null) {
+    throw new PipelineStageApiError(
+      envelope.error?.message ?? "The request could not be completed.",
+      response.status,
+    );
+  }
+
+  return envelope.data;
+}
+
+function sendJson<T>(path: string, method: string, body: unknown) {
+  return request<T>(path, { method, body: JSON.stringify(body) });
+}
+
+const pipelineStagesApi = {
+  list: () => request<PipelineStage[]>("/pipeline-stages"),
+  create: (input: { name: string; color: string }) =>
+    sendJson<PipelineStage>("/pipeline-stages", "POST", input),
+  update: (id: string, input: { name?: string; color?: string }) =>
+    sendJson<PipelineStage>(`/pipeline-stages/${id}`, "PATCH", input),
+  reorder: (stageIds: string[]) =>
+    sendJson<PipelineStage[]>("/pipeline-stages/reorder", "POST", { stageIds }),
+  delete: (id: string, replacementStageId?: string) =>
+    sendJson<{ id: string }>(`/pipeline-stages/${id}`, "DELETE", {
+      ...(replacementStageId ? { replacementStageId } : {}),
+    }),
+};
+
+function PipelineSettings() {
+  const { notify } = useNotifications();
+  const queryClient = useQueryClient();
+  const stagesQuery = useQuery({
+    queryKey: ["pipeline-stages"],
+    queryFn: pipelineStagesApi.list,
+  });
+
+  const [newName, setNewName] = useState("");
+  const [newColor, setNewColor] = useState("#305DDE");
+  const [deleteTarget, setDeleteTarget] = useState<PipelineStage | null>(null);
+  const [replacementStageId, setReplacementStageId] = useState("");
+  const [drafts, setDrafts] = useState<Record<string, { name: string; color: string }>>(
+    {},
+  );
+
+  useEffect(() => {
+    if (!stagesQuery.data) return;
+    setDrafts((previous) => {
+      const next: Record<string, { name: string; color: string }> = {};
+      for (const stage of stagesQuery.data) {
+        next[stage.id] = previous[stage.id] ?? {
+          name: stage.name,
+          color: stage.color,
+        };
+      }
+      return next;
+    });
+  }, [stagesQuery.data]);
+
+  const resetDeleteDialog = () => {
+    setDeleteTarget(null);
+    setReplacementStageId("");
+  };
+
+  const invalidateStages = () =>
+    queryClient.invalidateQueries({ queryKey: ["pipeline-stages"] });
+
+  const createStageMutation = useMutation({
+    mutationFn: pipelineStagesApi.create,
+    onSuccess: async () => {
+      await invalidateStages();
+      setNewName("");
+      setNewColor("#305DDE");
+      notify({ title: "Pipeline stage added", variant: "success" });
+    },
+    onError: (error) => {
+      notify({
+        title: "Stage could not be created",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "error",
+      });
+    },
+  });
+
+  const updateStageMutation = useMutation({
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: { name?: string; color?: string };
+    }) => pipelineStagesApi.update(id, input),
+    onSuccess: async () => {
+      await invalidateStages();
+      notify({ title: "Pipeline stage saved", variant: "success" });
+    },
+    onError: (error) => {
+      notify({
+        title: "Stage could not be saved",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "error",
+      });
+    },
+  });
+
+  const reorderMutation = useMutation({
+    mutationFn: pipelineStagesApi.reorder,
+    onSuccess: async () => {
+      await invalidateStages();
+    },
+    onError: (error) => {
+      notify({
+        title: "Stage order could not be updated",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "error",
+      });
+    },
+  });
+
+  const deleteStageMutation = useMutation({
+    mutationFn: ({
+      id,
+      replacementStageId,
+    }: {
+      id: string;
+      replacementStageId?: string;
+    }) => pipelineStagesApi.delete(id, replacementStageId),
+    onSuccess: async () => {
+      await invalidateStages();
+      resetDeleteDialog();
+      notify({ title: "Pipeline stage deleted", variant: "success" });
+    },
+    onError: (error) => {
+      notify({
+        title: "Stage could not be deleted",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "error",
+      });
+    },
+  });
+
+  const orderedStages = [...(stagesQuery.data ?? [])].sort(
+    (left, right) => left.order - right.order,
+  );
+
+  const moveStage = (index: number, direction: -1 | 1) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= orderedStages.length) return;
+    const reordered = [...orderedStages];
+    [reordered[index], reordered[targetIndex]] = [
+      reordered[targetIndex],
+      reordered[index],
+    ];
+    reorderMutation.mutate(reordered.map((stage) => stage.id));
+  };
+
+  const saveStage = (stage: PipelineStage) => {
+    const draft = drafts[stage.id];
+    if (!draft) return;
+    const name = draft.name.trim();
+    if (!name) {
+      notify({
+        title: "Stage name is required",
+        description: "Give this stage a name before saving it.",
+        variant: "error",
+      });
+      return;
+    }
+    updateStageMutation.mutate({
+      id: stage.id,
+      input: {
+        name,
+        color: draft.color,
+      },
+    });
+  };
+
+  const deleteStage = () => {
+    if (!deleteTarget) return;
+    deleteStageMutation.mutate({
+      id: deleteTarget.id,
+      replacementStageId: replacementStageId || undefined,
+    });
+  };
+
+  return (
+    <SkeletonSwap
+      loading={stagesQuery.isLoading}
+      label="Loading pipeline settings"
+      className="max-w-3xl"
+      fallback={
+        <div className="space-y-4">
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <Skeleton className="h-11 min-w-0 flex-1 rounded-full" />
+              <Skeleton className="h-11 w-full rounded-full sm:w-52" />
+              <Skeleton className="h-10 w-full rounded-md sm:w-32" />
+            </div>
+          </div>
+          {[0, 1, 2].map((stage) => (
+            <div
+              key={stage}
+              className="space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-8 w-28 rounded-md" />
+              </div>
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+                <Skeleton className="h-11 w-full rounded-full" />
+                <Skeleton className="h-11 w-full rounded-full" />
+              </div>
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-9 w-28 rounded-md" />
+                <Skeleton className="h-9 w-24 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="min-w-0 flex-1">
+              <Input
+                id="pipeline-stage-name"
+                label="Add stage"
+                placeholder="Discovery"
+                value={newName}
+                onChange={(event) => setNewName(event.target.value)}
+              />
+            </div>
+            <div className="w-full sm:w-52">
+              <ColorPicker
+                label="Color"
+                value={newColor}
+                onValueChange={(value) => value && setNewColor(value)}
+              />
+            </div>
+            <Button
+              type="button"
+              className="rounded-md"
+              onClick={() => {
+                if (!newName.trim()) {
+                  notify({
+                    title: "Stage name is required",
+                    description: "Enter a stage name before you add it.",
+                    variant: "error",
+                  });
+                  return;
+                }
+                createStageMutation.mutate({ name: newName.trim(), color: newColor });
+              }}
+              disabled={createStageMutation.isPending}
+              loading={createStageMutation.isPending}
+              icon={<Plus />}
+            >
+              Add stage
+            </Button>
+          </div>
+        </section>
+
+        {orderedStages.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-6 text-sm text-muted-foreground">
+            No pipeline stages yet. Add your first stage to start tracking deals.
+          </div>
+        ) : (
+          orderedStages.map((stage, index) => {
+            const draft = drafts[stage.id] ?? { name: stage.name, color: stage.color };
+            const replacementOptions = orderedStages.filter(
+              (item) => item.id !== stage.id,
+            );
+
+            return (
+              <div
+                key={stage.id}
+                className="rounded-xl border border-border bg-card p-4 sm:p-5"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-flex size-3.5 rounded-full border border-border"
+                      style={{ backgroundColor: draft.color }}
+                      aria-label={`Current ${stage.name} color`}
+                    />
+                    <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                      {stage.isDefault ? "Default" : "Custom"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-md"
+                      icon={<ArrowUp />}
+                      onClick={() => moveStage(index, -1)}
+                      disabled={index === 0 || reorderMutation.isPending}
+                    >
+                      Up
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-md"
+                      icon={<ArrowDown />}
+                      onClick={() => moveStage(index, 1)}
+                      disabled={
+                        index === orderedStages.length - 1 || reorderMutation.isPending
+                      }
+                    >
+                      Down
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+                  <Input
+                    id={`stage-name-${stage.id}`}
+                    label="Stage name"
+                    value={draft.name}
+                    onChange={(event) =>
+                      setDrafts((previous) => ({
+                        ...previous,
+                        [stage.id]: { ...draft, name: event.target.value },
+                      }))
+                    }
+                  />
+                  <ColorPicker
+                    label="Stage color"
+                    value={draft.color}
+                    onValueChange={(value) =>
+                      value &&
+                      setDrafts((previous) => ({
+                        ...previous,
+                        [stage.id]: { ...draft, color: value },
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-md"
+                    onClick={() => saveStage(stage)}
+                    loading={updateStageMutation.isPending}
+                  >
+                    Save stage
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="rounded-md"
+                    onClick={() => {
+                      setDeleteTarget(stage);
+                      setReplacementStageId(replacementOptions[0]?.id ?? "");
+                    }}
+                    disabled={orderedStages.length <= 1}
+                    icon={<Trash2 />}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <ConfirmationDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) resetDeleteDialog();
+        }}
+        title={deleteTarget ? `Delete ${deleteTarget.name}?` : "Delete pipeline stage?"}
+        description="Choose a replacement stage if this stage is currently attached to deals. The selected replacement will be applied before deletion."
+        confirmLabel="Delete stage"
+        tone="destructive"
+        onConfirm={deleteStage}
+      >
+        <div className="space-y-3">
+          <label
+            htmlFor="replacement-stage"
+            className="flex flex-col gap-1.5 text-sm font-medium"
+          >
+            Replacement stage
+            <select
+              id="replacement-stage"
+              value={replacementStageId}
+              onChange={(event) => setReplacementStageId(event.target.value)}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring/40"
+            >
+              <option value="">No replacement needed</option>
+              {orderedStages
+                .filter((stage) => stage.id !== deleteTarget?.id)
+                .map((stage) => (
+                  <option key={stage.id} value={stage.id}>
+                    {stage.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+        </div>
+      </ConfirmationDialog>
+    </SkeletonSwap>
+  );
+}
+
 export function AccountSettingsPage() {
   const items = [
     { value: "profile", label: "Profile", content: <ProfileSettings /> },
     { value: "security", label: "Security", content: <SecuritySettings /> },
     { value: "preferences", label: "Preferences", content: <PreferencesSettings /> },
+    { value: "pipeline", label: "Pipeline", content: <PipelineSettings /> },
   ];
 
   return (
