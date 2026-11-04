@@ -117,12 +117,16 @@ describe("Relio database models", () => {
 
   it("defines ordered default pipeline stages and keeps terminal states on deals", async () => {
     assert.deepEqual(
-      DEFAULT_PIPELINE_STAGES.map(({ name, order }) => [name, order]),
+      DEFAULT_PIPELINE_STAGES.map(({ name, defaultProbability, order }) => [
+        name,
+        defaultProbability,
+        order,
+      ]),
       [
-        ["New", 0],
-        ["Qualified", 1],
-        ["Proposal", 2],
-        ["Negotiation", 3],
+        ["New", 10, 0],
+        ["Qualified", 25, 1],
+        ["Proposal", 50, 2],
+        ["Negotiation", 75, 3],
       ],
     );
     assert.ok(DEFAULT_PIPELINE_STAGES.every(({ isDefault }) => isDefault));
@@ -153,9 +157,25 @@ describe("Relio database models", () => {
       color: "#0ea5e9",
       order: 1.5,
     });
+    const invalidProbability = new PipelineStage({
+      owner: new mongoose.Types.ObjectId(),
+      name: "Custom",
+      color: "#0ea5e9",
+      defaultProbability: 101,
+      order: 2,
+    });
+    const customStage = new PipelineStage({
+      owner: new mongoose.Types.ObjectId(),
+      name: "Custom",
+      color: "#0ea5e9",
+      order: 2,
+    });
 
     await assert.rejects(invalidColor.validate(), /color/);
     await assert.rejects(fractionalOrder.validate(), /order/);
+    await assert.rejects(invalidProbability.validate(), /defaultProbability/);
+    await customStage.validate();
+    assert.equal(customStage.defaultProbability, null);
   });
 
   it("defines Deal fields and validates PRD business constraints", async () => {
@@ -189,6 +209,7 @@ describe("Relio database models", () => {
     assert.equal(Deal.schema.path("status").options.default, "open");
     assert.equal(Deal.schema.path("lostReason").options.default, null);
     assert.equal(Deal.schema.path("actualCloseDate").options.default, null);
+    assert.equal(Deal.schema.path("lostDate").options.default, null);
     assert.equal(Deal.schema.path("finalValue").options.default, null);
     assert.equal(Deal.schema.path("previousStage").options.ref, "PipelineStage");
     assert.deepEqual(dealStatusPath.enumValues, ["open", "won", "lost"]);
@@ -583,6 +604,19 @@ describe("Relio database models", () => {
     assert.deepEqual(
       mutations.slice(7).map(({ type }) => type),
       ["reassign_stage_deals", "reassign_previous_stage", "delete_pipeline_stage"],
+    );
+
+    await assert.rejects(integrity.deleteDeals(otherOwner, [dealId]), /not found/);
+    assert.equal(mutations.length, 10);
+    await integrity.deleteDeals(owner, [dealId]);
+    assert.deepEqual(
+      mutations.slice(10).map(({ type }) => type),
+      [
+        "unlink_deal_tasks",
+        "unlink_deal_activities",
+        "delete_deal_history",
+        "delete_deal",
+      ],
     );
     assert.ok(mutations.every((mutation) => mutation.ownerId.equals(owner)));
   });

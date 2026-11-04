@@ -25,6 +25,7 @@ export interface IDeal {
   status: "open" | "won" | "lost";
   lostReason: DealLostReason | null;
   actualCloseDate?: Date | null;
+  lostDate?: Date | null;
   finalValue?: number | null;
   previousStage?: mongoose.Types.ObjectId | null;
   createdAt: Date;
@@ -101,6 +102,10 @@ const dealSchema = new Schema<IDeal>(
       default: null,
     },
     actualCloseDate: {
+      type: Date,
+      default: null,
+    },
+    lostDate: {
       type: Date,
       default: null,
     },

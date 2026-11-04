@@ -134,10 +134,11 @@ function sendJson<T>(path: string, method: string, body: unknown) {
 }
 
 export const contactsApi = {
-  async list(params: ContactListParams): Promise<ContactPage> {
+  async list(params: ContactListParams, signal?: AbortSignal): Promise<ContactPage> {
     const query = queryString(params);
     const response = await fetch(`${apiBaseUrl}/contacts?${query}`, {
       credentials: "include",
+      signal,
     });
     const envelope = (await response.json()) as ApiEnvelope<Contact[]>;
     if (!response.ok || !envelope.success || !envelope.data) {

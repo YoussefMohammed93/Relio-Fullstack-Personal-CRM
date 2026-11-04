@@ -4,6 +4,7 @@ export interface IPipelineStage {
   owner: mongoose.Types.ObjectId;
   name: string;
   color: string;
+  defaultProbability: number | null;
   order: number;
   isDefault: boolean;
   createdAt: Date;
@@ -11,13 +12,37 @@ export interface IPipelineStage {
 }
 
 export const DEFAULT_PIPELINE_STAGES = [
-  { name: "New", color: "#64748b", order: 0, isDefault: true },
-  { name: "Qualified", color: "#0ea5e9", order: 1, isDefault: true },
-  { name: "Proposal", color: "#2563eb", order: 2, isDefault: true },
-  { name: "Negotiation", color: "#f59e0b", order: 3, isDefault: true },
+  {
+    name: "New",
+    color: "#64748b",
+    defaultProbability: 10,
+    order: 0,
+    isDefault: true,
+  },
+  {
+    name: "Qualified",
+    color: "#0ea5e9",
+    defaultProbability: 25,
+    order: 1,
+    isDefault: true,
+  },
+  {
+    name: "Proposal",
+    color: "#2563eb",
+    defaultProbability: 50,
+    order: 2,
+    isDefault: true,
+  },
+  {
+    name: "Negotiation",
+    color: "#f59e0b",
+    defaultProbability: 75,
+    order: 3,
+    isDefault: true,
+  },
 ] as const satisfies readonly Pick<
   IPipelineStage,
-  "name" | "color" | "order" | "isDefault"
+  "name" | "color" | "defaultProbability" | "order" | "isDefault"
 >[];
 
 const pipelineStageSchema = new Schema<IPipelineStage>(
@@ -37,6 +62,12 @@ const pipelineStageSchema = new Schema<IPipelineStage>(
       required: true,
       default: "#3b82f6",
       match: /^#[0-9a-fA-F]{6}$/,
+    },
+    defaultProbability: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: null,
     },
     order: {
       type: Number,

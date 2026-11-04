@@ -77,6 +77,26 @@ export type IntegrityMutation =
       type: "delete_pipeline_stage";
       ownerId: mongoose.Types.ObjectId;
       stageId: mongoose.Types.ObjectId;
+    }
+  | {
+      type: "unlink_deal_tasks";
+      ownerId: mongoose.Types.ObjectId;
+      dealId: mongoose.Types.ObjectId;
+    }
+  | {
+      type: "unlink_deal_activities";
+      ownerId: mongoose.Types.ObjectId;
+      dealId: mongoose.Types.ObjectId;
+    }
+  | {
+      type: "delete_deal_history";
+      ownerId: mongoose.Types.ObjectId;
+      dealId: mongoose.Types.ObjectId;
+    }
+  | {
+      type: "delete_deal";
+      ownerId: mongoose.Types.ObjectId;
+      dealId: mongoose.Types.ObjectId;
     };
 
 export interface RelationshipIntegrityStore {
@@ -234,6 +254,33 @@ async function applyMongooseMutation(
         { _id: mutation.stageId, owner: ownerId },
         { session },
       );
+      return;
+    case "unlink_deal_tasks":
+      await Task.updateMany(
+        {
+          owner: ownerId,
+          relatedEntityType: "Deal",
+          relatedEntityId: mutation.dealId,
+        },
+        { $set: { relatedEntityType: null, relatedEntityId: null } },
+        { session },
+      );
+      return;
+    case "unlink_deal_activities":
+      await Activity.updateMany(
+        { owner: ownerId, deal: mutation.dealId },
+        { $set: { deal: null } },
+        { session },
+      );
+      return;
+    case "delete_deal_history":
+      await DealHistory.deleteMany(
+        { owner: ownerId, deal: mutation.dealId },
+        { session },
+      );
+      return;
+    case "delete_deal":
+      await Deal.deleteOne({ _id: mutation.dealId, owner: ownerId }, { session });
   }
 }
 
@@ -334,6 +381,28 @@ export function createRelationshipIntegrityService(
             session,
           );
           await store.apply({ type: "delete_company", ownerId, companyId }, session);
+        }
+      });
+    },
+
+    async deleteDeals(
+      ownerId: mongoose.Types.ObjectId,
+      dealIds: readonly mongoose.Types.ObjectId[],
+    ) {
+      await store.withTransaction(async (session) => {
+        await assertOwnedReferences(
+          ownerId,
+          dealIds.map((id) => ({ type: "Deal" as const, id })),
+          session,
+        );
+        for (const dealId of dealIds) {
+          await store.apply({ type: "unlink_deal_tasks", ownerId, dealId }, session);
+          await store.apply(
+            { type: "unlink_deal_activities", ownerId, dealId },
+            session,
+          );
+          await store.apply({ type: "delete_deal_history", ownerId, dealId }, session);
+          await store.apply({ type: "delete_deal", ownerId, dealId }, session);
         }
       });
     },

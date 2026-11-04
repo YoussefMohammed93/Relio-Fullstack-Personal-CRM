@@ -12,10 +12,18 @@ import type {
   UpdatePipelineStageInput,
 } from "./pipeline-stages.schemas.js";
 
+const legacyDefaultProbability = Object.fromEntries(
+  DEFAULT_PIPELINE_STAGES.map(({ name, defaultProbability }) => [
+    name,
+    defaultProbability,
+  ]),
+);
+
 export interface PipelineStageView {
   id: string;
   name: string;
   color: string;
+  defaultProbability: number | null;
   order: number;
   isDefault: boolean;
   createdAt: Date;
@@ -25,10 +33,19 @@ export interface PipelineStageView {
 function toPipelineStageView(
   stage: IPipelineStage & { _id: mongoose.Types.ObjectId },
 ): PipelineStageView {
+  const legacyDefaultProbability: Record<string, number> = {
+    New: 10,
+    Qualified: 25,
+    Proposal: 50,
+    Negotiation: 75,
+  };
   return {
     id: String(stage._id),
     name: stage.name,
     color: stage.color,
+    defaultProbability:
+      stage.defaultProbability ??
+      (stage.isDefault ? (legacyDefaultProbability[stage.name] ?? null) : null),
     order: stage.order,
     isDefault: stage.isDefault,
     createdAt: stage.createdAt,
@@ -92,9 +109,20 @@ export async function updatePipelineStage(
   id: string,
   input: UpdatePipelineStageInput,
 ): Promise<PipelineStageView> {
+  const ownerId = objectId(owner);
+  const current = await PipelineStage.findOne({ _id: objectId(id), owner: ownerId });
+  if (!current) throw new NotFoundError("Pipeline stage not found");
+  const probability =
+    current.defaultProbability ??
+    (current.isDefault ? (legacyDefaultProbability[current.name] ?? null) : null);
   const stage = await PipelineStage.findOneAndUpdate(
-    { _id: objectId(id), owner: objectId(owner) },
-    { $set: input },
+    { _id: objectId(id), owner: ownerId },
+    {
+      $set: {
+        ...input,
+        ...(probability !== null ? { defaultProbability: probability } : {}),
+      },
+    },
     { new: true, runValidators: true },
   );
   if (!stage) throw new NotFoundError("Pipeline stage not found");
